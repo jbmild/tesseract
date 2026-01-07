@@ -1,0 +1,21 @@
+version: '3.8'
+
+# Development override for docker-compose.yml
+# Use with: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  backend:
+    build:
+      target: development
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: npm run start:dev
+
+  web:
+    build:
+      target: development
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+    command: npm run dev -- --host

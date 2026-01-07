@@ -1,61 +1,126 @@
-# tesseract
+# Tesseract
 The cosmic cube that controls your warehouse Space
 
-## Stack
-The "JavaScript Everywhere" Stack (Recommended)
-This is the most flexible option. It allows you to share up to 90% of your business logic between the server, the web browser, the desktop app, and the mobile app.
+## Project Structure
 
-Language: TypeScript (preferred) or JavaScript.
+This is a monorepo containing:
+- **Backend**: Express.js API with MySQL database
+- **Web**: React + TypeScript web application
+- **Desktop**: Electron desktop application
+- **Mobile**: React Native mobile application
+- **Shared**: Shared TypeScript types and utilities
 
-Web (Online): React.js or Vue.js.
+## Prerequisites
 
-Desktop (Local): Electron (wraps your web app into a standalone desktop program) or Tauri.
+- Node.js 18+ and npm
+- Docker and Docker Compose (for running the full stack)
+- For mobile development: React Native CLI and Android Studio / Xcode
 
-Mobile (Scanner): React Native or Ionic.
+## Quick Start with Docker
 
-Backend: Node.js (NestJS or Express).
+1. Clone the repository
+2. Copy `.env.example` to `.env` and adjust if needed
+3. Run the entire stack:
+   ```bash
+   docker-compose up -d
+   ```
 
-Why it fits your WMS:
+This will start:
+- MySQL database on port 3306
+- Backend API on port 3000
+- Web application on port 5173
 
-Offline Sync: You can use RxDB or PouchDB (local database) which syncs automatically with CouchDB or a PostgreSQL server when the connection is restored. This is crucial for warehouses with Wi-Fi dead zones.
+## Development Setup
 
-Scanners: React Native has excellent libraries (like react-native-camera or react-native-vision-camera) that tap into the native mobile hardware for instant barcode scanning, which is much faster than a web-based camera scanner.
+### Install Dependencies
 
-## order statuses
-1. Pre-Processing Phase
-Created / New: The order has entered the WMS but has not been processed yet.
+```bash
+# Install all dependencies
+npm run install:all
 
-Open: The order is active and ready to be planned.
+# Or install individually
+npm run install:backend
+npm run install:web
+npm run install:desktop
+npm run install:mobile
+```
 
-On Hold / Held: The order is paused (e.g., due to credit issues or missing data) and cannot be processed until resolved.
+### Run Applications
 
-Backordered: There is not enough stock to fulfill the order. It waits until new inventory arrives.
+#### Backend
+```bash
+npm run dev:backend
+# or
+cd backend && npm run start:dev
+```
 
-2. Planning Phase
-Allocated / Reserved: The inventory has been logically assigned to the order. The stock still sits on the shelf, but it is "reserved" for this specific customer.
+#### Web
+```bash
+npm run dev:web
+# or
+cd web && npm run dev
+```
 
-Released (to Warehouse): The order has been sent to the warehouse floor operations. It is now visible on the workers' RF devices (handheld scanners).
+#### Desktop
+```bash
+npm run dev:desktop
+# or
+cd desktop && npm run dev
+```
 
-Waved: The order has been grouped into a "Wave" (a batch of orders) to be picked efficiently.
+#### Mobile
+```bash
+cd mobile && npm start
+# Then in separate terminals:
+npm run android  # for Android
+npm run ios      # for iOS
+```
 
-3. Execution Phase (Warehouse Floor)
-Picking / In Picking: A worker is currently moving through the aisles collecting the items.
+## Building for Production
 
-Picked / Pick Complete: All items for the order have been physically collected.
+```bash
+# Build backend
+npm run build:backend
 
-Short / Short Picked: The worker could not find all the items requested (inventory discrepancy). The order is incomplete.
+# Build web
+npm run build:web
 
-Packing / In Packing: The items are being packed into shipping boxes, weighed, and labeled.
+# Build desktop
+npm run build:desktop
+```
 
-Packed: The packing process is finished, and the parcel is sealed.
+## Docker Commands
 
-4. Shipping Phase
-Staged: The packed order is sitting at the dock door, waiting for the truck.
+```bash
+# Start all services
+docker-compose up -d
 
-Loaded: The order has been physically loaded onto the truck.
+# Stop all services
+docker-compose down
 
-Shipped / Dispatched: The truck has left the facility. Inventory is permanently deducted, and the tracking number is active.
+# View logs
+docker-compose logs -f
 
-Closed / Completed: The full lifecycle is finished successfully.
+# Rebuild containers
+docker-compose up -d --build
 
-Cancelled: The order was voided and the stock (if allocated) was released back to general inventory.
+# Stop and remove volumes (clears database)
+docker-compose down -v
+```
+
+## API Endpoints
+
+- Health: `GET /api/health`
+- Users: `GET /api/users`, `POST /api/users`, etc.
+- Orders: `GET /api/orders`, `POST /api/orders`, etc.
+- Products: `GET /api/products`, `POST /api/products`, etc.
+
+## Technology Stack
+
+- **Language**: TypeScript
+- **Backend**: Express.js with TypeORM
+- **Database**: MySQL 8.0
+- **Web**: React + Vite
+- **Desktop**: Electron
+- **Mobile**: React Native
+- **Containerization**: Docker & Docker Compose
