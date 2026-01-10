@@ -1,6 +1,7 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/user.entity';
+import { ClientContextRequest } from '../middleware/client-context.middleware';
 
 const router = Router();
 const usersService = new UsersService();
@@ -11,9 +12,9 @@ const excludePassword = (user: User): Omit<User, 'password'> => {
   return userWithoutPassword;
 };
 
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (req: ClientContextRequest, res: Response) => {
   try {
-    const data = await usersService.findAll();
+    const data = await usersService.findAll(req.clientId);
     const sanitizedData = data.map(excludePassword);
     res.json({ success: true, data: sanitizedData });
   } catch (error) {

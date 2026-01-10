@@ -9,13 +9,20 @@ export const api = axios.create({
   },
 });
 
-// Add token to requests if available
+// Add token and client context to requests if available
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('auth_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Add selected client ID to headers for multi-tenant context
+    const selectedClientId = localStorage.getItem('selected_client');
+    if (selectedClientId) {
+      config.headers['X-Client-Id'] = selectedClientId;
+    }
+    
     return config;
   },
   (error) => {

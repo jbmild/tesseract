@@ -9,7 +9,10 @@ export class OrdersService {
     this.ordersRepository = AppDataSource.getRepository(Order);
   }
 
-  async findAll(): Promise<Order[]> {
+  async findAll(clientId?: number | null): Promise<Order[]> {
+    // Note: Orders don't have direct client relationship yet
+    // This is a placeholder for future client filtering
+    // For now, return all orders (or filter by user's clients if needed)
     return this.ordersRepository.find();
   }
 

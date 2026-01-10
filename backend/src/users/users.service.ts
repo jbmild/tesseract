@@ -10,10 +10,19 @@ export class UsersService {
     this.usersRepository = AppDataSource.getRepository(User);
   }
 
-  async findAll(): Promise<User[]> {
-    return this.usersRepository.find({
-      relations: ['role', 'role.permissions', 'clients'],
-    });
+  async findAll(clientId?: number | null): Promise<User[]> {
+    const queryBuilder = this.usersRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.role', 'role')
+      .leftJoinAndSelect('role.permissions', 'permissions')
+      .leftJoinAndSelect('user.clients', 'clients');
+
+    // If clientId is provided, filter users by client assignment
+    if (clientId) {
+      queryBuilder.where('clients.id = :clientId', { clientId });
+    }
+
+    return queryBuilder.getMany();
   }
 
   async findOne(id: number): Promise<User | null> {
@@ -26,7 +35,7 @@ export class UsersService {
   async findByUsername(username: string): Promise<User | null> {
     return this.usersRepository.findOne({
       where: { username },
-      relations: ['role', 'role.permissions'],
+      relations: ['role', 'role.permissions', 'clients'],
     });
   }
 

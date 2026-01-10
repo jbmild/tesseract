@@ -12,6 +12,7 @@ import permissionsRoutes, { setAppInstance } from './routes/permissions.routes';
 import clientsRoutes from './routes/clients.routes';
 import { PermissionsService } from './permissions/permissions.service';
 import { authenticateToken } from './auth/auth.middleware';
+import { clientContextMiddleware } from './middleware/client-context.middleware';
 
 // Load environment variables (only if not already set, e.g., in Docker)
 try {
@@ -41,13 +42,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 
-// Protected routes (require authentication)
-app.use('/api/users', authenticateToken, usersRoutes);
-app.use('/api/orders', authenticateToken, ordersRoutes);
-app.use('/api/products', authenticateToken, productsRoutes);
-app.use('/api/roles', authenticateToken, rolesRoutes);
-app.use('/api/permissions', authenticateToken, permissionsRoutes);
-app.use('/api/clients', authenticateToken, clientsRoutes);
+// Protected routes (require authentication and client context)
+app.use('/api/users', authenticateToken, clientContextMiddleware, usersRoutes);
+app.use('/api/orders', authenticateToken, clientContextMiddleware, ordersRoutes);
+app.use('/api/products', authenticateToken, clientContextMiddleware, productsRoutes);
+app.use('/api/roles', authenticateToken, clientContextMiddleware, rolesRoutes);
+app.use('/api/permissions', authenticateToken, clientContextMiddleware, permissionsRoutes);
+app.use('/api/clients', authenticateToken, clientContextMiddleware, clientsRoutes);
 
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

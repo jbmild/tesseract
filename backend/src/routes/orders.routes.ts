@@ -1,12 +1,13 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
 import { OrdersService } from '../orders/orders.service';
+import { ClientContextRequest } from '../middleware/client-context.middleware';
 
 const router = Router();
 const ordersService = new OrdersService();
 
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (req: ClientContextRequest, res: Response) => {
   try {
-    const data = await ordersService.findAll();
+    const data = await ordersService.findAll(req.clientId);
     res.json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, error: (error as Error).message });

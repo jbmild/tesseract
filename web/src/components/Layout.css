@@ -82,6 +82,28 @@
   text-transform: capitalize;
 }
 
+.client-selector {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 150px;
+}
+
+.client-selector:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.client-selector option {
+  background: #667eea;
+  color: white;
+}
+
 .btn-logout {
   background: rgba(255, 255, 255, 0.2);
   color: white;

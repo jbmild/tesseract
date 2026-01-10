@@ -1,15 +1,23 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useClient } from '../contexts/ClientContext';
 import './Layout.css';
 
 export default function Layout() {
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { selectedClient, availableClients, setSelectedClient } = useClient();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleClientChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const clientId = parseInt(e.target.value);
+    const client = availableClients.find(c => c.id === clientId);
+    setSelectedClient(client || null);
   };
 
   return (
@@ -22,6 +30,20 @@ export default function Layout() {
         <div className="user-info">
           <span className="username">{user?.username}</span>
           {user?.role && <span className="user-role">{user.role.name}</span>}
+          {availableClients.length > 0 && (
+            <select
+              className="client-selector"
+              value={selectedClient?.id || ''}
+              onChange={handleClientChange}
+            >
+              <option value="">Select Client</option>
+              {availableClients.map((client) => (
+                <option key={client.id} value={client.id}>
+                  {client.name}
+                </option>
+              ))}
+            </select>
+          )}
           <button onClick={handleLogout} className="btn-logout">
             Logout
           </button>
