@@ -8,6 +8,7 @@ import ordersRoutes from './routes/orders.routes';
 import productsRoutes from './routes/products.routes';
 import rolesRoutes from './routes/roles.routes';
 import permissionsRoutes, { setAppInstance } from './routes/permissions.routes';
+import clientsRoutes from './routes/clients.routes';
 import { PermissionsService } from './permissions/permissions.service';
 
 // Load environment variables (only if not already set, e.g., in Docker)
@@ -41,6 +42,7 @@ app.use('/api/orders', ordersRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/roles', rolesRoutes);
 app.use('/api/permissions', permissionsRoutes);
+app.use('/api/clients', clientsRoutes);
 
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

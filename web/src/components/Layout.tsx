@@ -18,6 +18,9 @@ export default function Layout() {
         <Link to="/users" className={location.pathname === '/users' ? 'active' : ''}>
           👥 Users
         </Link>
+        <Link to="/clients" className={location.pathname === '/clients' ? 'active' : ''}>
+          🏢 Clients
+        </Link>
         <Link to="/roles" className={location.pathname === '/roles' ? 'active' : ''}>
           🔐 Roles
         </Link>

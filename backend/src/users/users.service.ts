@@ -12,14 +12,14 @@ export class UsersService {
 
   async findAll(): Promise<User[]> {
     return this.usersRepository.find({
-      relations: ['role', 'role.permissions'],
+      relations: ['role', 'role.permissions', 'client'],
     });
   }
 
   async findOne(id: number): Promise<User | null> {
     return this.usersRepository.findOne({
       where: { id },
-      relations: ['role', 'role.permissions'],
+      relations: ['role', 'role.permissions', 'client'],
     });
   }
 

@@ -8,6 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Role } from '../roles/role.entity';
+import { Client } from '../clients/client.entity';
 
 @Entity('users')
 export class User {
@@ -20,8 +21,12 @@ export class User {
   @Column()
   password: string; // Will be hashed
 
+  @ManyToOne(() => Client, (client) => client.users, { nullable: true })
+  @JoinColumn({ name: 'clientId' })
+  client: Client | null;
+
   @Column({ nullable: true })
-  clientId: string | null;
+  clientId: number | null;
 
   @ManyToOne(() => Role, (role) => role.users, { nullable: true })
   @JoinColumn({ name: 'roleId' })

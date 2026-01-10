@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
-import { usersApi, rolesApi, User, CreateUserDto, UpdateUserDto } from '../services/api';
+import { usersApi, rolesApi, clientsApi, User, CreateUserDto, UpdateUserDto, Client } from '../services/api';
 import './Management.css';
 
 export default function Users() {
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<CreateUserDto>({
     username: '',
     password: '',
-    clientId: '',
+    clientId: null,
     roleId: null,
   });
 
@@ -22,12 +23,14 @@ export default function Users() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [usersRes, rolesRes] = await Promise.all([
+      const [usersRes, rolesRes, clientsRes] = await Promise.all([
         usersApi.getAll(),
         rolesApi.getAll(),
+        clientsApi.getAll(),
       ]);
       setUsers(usersRes.data.data);
       setRoles(rolesRes.data.data);
+      setClients(clientsRes.data.data);
     } catch (error) {
       console.error('Failed to load data:', error);
       alert('Failed to load data');
@@ -38,7 +41,7 @@ export default function Users() {
 
   const handleCreate = () => {
     setEditingUser(null);
-    setFormData({ username: '', password: '', clientId: '', roleId: null });
+    setFormData({ username: '', password: '', clientId: null, roleId: null });
     setShowModal(true);
   };
 
@@ -47,7 +50,7 @@ export default function Users() {
     setFormData({
       username: user.username,
       password: '',
-      clientId: user.clientId || '',
+      clientId: user.clientId,
       roleId: user.roleId,
     });
     setShowModal(true);
@@ -70,7 +73,7 @@ export default function Users() {
       if (editingUser) {
         const updateData: UpdateUserDto = {
           username: formData.username,
-          clientId: formData.clientId || null,
+          clientId: formData.clientId,
           roleId: formData.roleId,
         };
         if (formData.password) {
@@ -103,7 +106,7 @@ export default function Users() {
             <tr>
               <th>ID</th>
               <th>Username</th>
-              <th>Client ID</th>
+              <th>Client</th>
               <th>Role</th>
               <th>Created</th>
               <th>Actions</th>
@@ -119,7 +122,7 @@ export default function Users() {
                 <tr key={user.id}>
                   <td>{user.id}</td>
                   <td>{user.username}</td>
-                  <td>{user.clientId || '-'}</td>
+                  <td>{user.client?.name || '-'}</td>
                   <td>{user.role?.name || '-'}</td>
                   <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                   <td>
@@ -157,12 +160,18 @@ export default function Users() {
                 />
               </div>
               <div className="form-group">
-                <label>Client ID</label>
-                <input
-                  type="text"
-                  value={formData.clientId}
-                  onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
-                />
+                <label>Client</label>
+                <select
+                  value={formData.clientId || ''}
+                  onChange={(e) => setFormData({ ...formData, clientId: e.target.value ? parseInt(e.target.value) : null })}
+                >
+                  <option value="">No Client</option>
+                  {clients.map((client) => (
+                    <option key={client.id} value={client.id}>
+                      {client.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="form-group">
                 <label>Role</label>

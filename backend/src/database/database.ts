@@ -5,10 +5,11 @@ import { Order } from '../orders/order.entity';
 import { Product } from '../products/product.entity';
 import { Role } from '../roles/role.entity';
 import { Permission } from '../permissions/permission.entity';
+import { Client } from '../clients/client.entity';
 
 export const AppDataSource = new DataSource({
   ...getDatabaseConfig(),
-  entities: [User, Order, Product, Role, Permission],
+  entities: [User, Order, Product, Role, Permission, Client],
 });
 
 export const initializeDatabase = async (): Promise<void> => {

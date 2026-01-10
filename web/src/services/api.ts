@@ -13,7 +13,8 @@ export const api = axios.create({
 export interface User {
   id: number;
   username: string;
-  clientId: string | null;
+  clientId: number | null;
+  client?: Client | null;
   roleId: number | null;
   role?: Role | null;
   createdAt: string;
@@ -39,17 +40,25 @@ export interface Permission {
   updatedAt: string;
 }
 
+export interface Client {
+  id: number;
+  name: string;
+  users?: User[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface CreateUserDto {
   username: string;
   password: string;
-  clientId?: string | null;
+  clientId?: number | null;
   roleId?: number | null;
 }
 
 export interface UpdateUserDto {
   username?: string;
   password?: string;
-  clientId?: string | null;
+  clientId?: number | null;
   roleId?: number | null;
 }
 
@@ -107,4 +116,13 @@ export const permissionsApi = {
   create: (data: CreatePermissionDto) => api.post<{ success: boolean; data: Permission }>('/api/permissions', data),
   update: (id: number, data: UpdatePermissionDto) => api.put<{ success: boolean; data: Permission }>(`/api/permissions/${id}`, data),
   delete: (id: number) => api.delete<{ success: boolean; message: string }>(`/api/permissions/${id}`),
+};
+
+// Clients API
+export const clientsApi = {
+  getAll: () => api.get<{ success: boolean; data: Client[] }>('/api/clients'),
+  getById: (id: number) => api.get<{ success: boolean; data: Client }>(`/api/clients/${id}`),
+  create: (data: { name: string }) => api.post<{ success: boolean; data: Client }>('/api/clients', data),
+  update: (id: number, data: { name: string }) => api.put<{ success: boolean; data: Client }>(`/api/clients/${id}`, data),
+  delete: (id: number) => api.delete<{ success: boolean; message: string }>(`/api/clients/${id}`),
 };
