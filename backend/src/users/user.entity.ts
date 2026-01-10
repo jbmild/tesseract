@@ -2,9 +2,12 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
+  ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
+  JoinColumn,
 } from 'typeorm';
+import { Role } from '../roles/role.entity';
 
 @Entity('users')
 export class User {
@@ -12,10 +15,20 @@ export class User {
   id: number;
 
   @Column({ unique: true })
-  email: string;
+  username: string;
 
   @Column()
-  name: string;
+  password: string; // Will be hashed
+
+  @Column({ nullable: true })
+  clientId: string | null;
+
+  @ManyToOne(() => Role, (role) => role.users, { nullable: true })
+  @JoinColumn({ name: 'roleId' })
+  role: Role | null;
+
+  @Column({ nullable: true })
+  roleId: number | null;
 
   @CreateDateColumn()
   createdAt: Date;
