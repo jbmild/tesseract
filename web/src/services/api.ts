@@ -44,8 +44,7 @@ api.interceptors.response.use(
 export interface User {
   id: number;
   username: string;
-  clientId: number | null;
-  client?: Client | null;
+  clients?: Client[];
   roleId: number | null;
   role?: Role | null;
   createdAt: string;
@@ -82,14 +81,14 @@ export interface Client {
 export interface CreateUserDto {
   username: string;
   password: string;
-  clientId?: number | null;
+  clientIds?: number[];
   roleId?: number | null;
 }
 
 export interface UpdateUserDto {
   username?: string;
   password?: string;
-  clientId?: number | null;
+  clientIds?: number[];
   roleId?: number | null;
 }
 

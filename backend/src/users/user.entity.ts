@@ -3,9 +3,11 @@ import {
   Column,
   PrimaryGeneratedColumn,
   ManyToOne,
+  ManyToMany,
   CreateDateColumn,
   UpdateDateColumn,
   JoinColumn,
+  JoinTable,
 } from 'typeorm';
 import { Role } from '../roles/role.entity';
 import { Client } from '../clients/client.entity';
@@ -21,12 +23,13 @@ export class User {
   @Column()
   password: string; // Will be hashed
 
-  @ManyToOne(() => Client, (client) => client.users, { nullable: true })
-  @JoinColumn({ name: 'clientId' })
-  client: Client | null;
-
-  @Column({ nullable: true })
-  clientId: number | null;
+  @ManyToMany(() => Client, (client) => client.users)
+  @JoinTable({
+    name: 'user_clients',
+    joinColumn: { name: 'userId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'clientId', referencedColumnName: 'id' },
+  })
+  clients: Client[];
 
   @ManyToOne(() => Role, (role) => role.users, { nullable: true })
   @JoinColumn({ name: 'roleId' })

@@ -16,7 +16,7 @@ export default function Users() {
   const [formData, setFormData] = useState<CreateUserDto>({
     username: '',
     password: '',
-    clientId: null,
+    clientIds: [],
     roleId: null,
   });
 
@@ -46,7 +46,7 @@ export default function Users() {
 
   const handleCreate = () => {
     setEditingUser(null);
-    setFormData({ username: '', password: '', clientId: null, roleId: null });
+    setFormData({ username: '', password: '', clientIds: [], roleId: null });
     setShowModal(true);
   };
 
@@ -55,7 +55,7 @@ export default function Users() {
     setFormData({
       username: user.username,
       password: '',
-      clientId: user.clientId,
+      clientIds: user.clients?.map(c => c.id) || [],
       roleId: user.roleId,
     });
     setShowModal(true);
@@ -93,7 +93,7 @@ export default function Users() {
       if (editingUser) {
         const updateData: UpdateUserDto = {
           username: formData.username,
-          clientId: formData.clientId,
+          clientIds: formData.clientIds,
           roleId: formData.roleId,
         };
         if (formData.password) {
@@ -146,7 +146,7 @@ export default function Users() {
             <tr>
               <th>ID</th>
               <th>Username</th>
-              <th>Client</th>
+              <th>Clients</th>
               <th>Role</th>
               <th>Created</th>
               <th>Actions</th>
@@ -162,7 +162,7 @@ export default function Users() {
                 <tr key={user.id}>
                   <td>{user.id}</td>
                   <td>{user.username}</td>
-                  <td>{user.client?.name || '-'}</td>
+                  <td>{user.clients && user.clients.length > 0 ? user.clients.map(c => c.name).join(', ') : '-'}</td>
                   <td>{user.role?.name || '-'}</td>
                   <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                   <td>
@@ -200,18 +200,26 @@ export default function Users() {
                 />
               </div>
               <div className="form-group">
-                <label>Client</label>
+                <label>Clients</label>
                 <select
-                  value={formData.clientId || ''}
-                  onChange={(e) => setFormData({ ...formData, clientId: e.target.value ? parseInt(e.target.value) : null })}
+                  multiple
+                  size={5}
+                  value={formData.clientIds?.map(id => id.toString()) || []}
+                  onChange={(e) => {
+                    const selectedIds = Array.from(e.target.selectedOptions, option => parseInt(option.value));
+                    setFormData({ ...formData, clientIds: selectedIds });
+                  }}
+                  style={{ minHeight: '100px' }}
                 >
-                  <option value="">No Client</option>
                   {clients.map((client) => (
                     <option key={client.id} value={client.id}>
                       {client.name}
                     </option>
                   ))}
                 </select>
+                <small style={{ display: 'block', marginTop: '5px', color: '#666' }}>
+                  Hold Ctrl (or Cmd on Mac) to select multiple clients
+                </small>
               </div>
               <div className="form-group">
                 <label>Role</label>

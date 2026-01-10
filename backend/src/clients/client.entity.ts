@@ -2,7 +2,7 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  OneToMany,
+  ManyToMany,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -16,7 +16,7 @@ export class Client {
   @Column({ unique: true })
   name: string;
 
-  @OneToMany(() => User, (user) => user.client)
+  @ManyToMany(() => User, (user) => user.clients)
   users: User[];
 
   @CreateDateColumn()
