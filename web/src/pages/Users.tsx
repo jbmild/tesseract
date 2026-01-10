@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { usersApi, rolesApi, clientsApi, User, CreateUserDto, UpdateUserDto, Client } from '../services/api';
+import ConfirmDialog from '../components/ConfirmDialog';
 import './Management.css';
 
 export default function Users() {
@@ -8,6 +10,8 @@ export default function Users() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<number | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<CreateUserDto>({
     username: '',
@@ -33,7 +37,7 @@ export default function Users() {
       setClients(clientsRes.data.data);
     } catch (error) {
       console.error('Failed to load data:', error);
-      alert('Failed to load data');
+      toast.error('Failed to load data');
     } finally {
       setLoading(false);
     }
@@ -56,14 +60,23 @@ export default function Users() {
     setShowModal(true);
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this user?')) return;
+  const handleDeleteClick = (id: number) => {
+    setUserToDelete(id);
+    setShowConfirmDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!userToDelete) return;
     try {
-      await usersApi.delete(id);
+      await usersApi.delete(userToDelete);
+      toast.success('User deleted successfully');
       await loadData();
     } catch (error) {
       console.error('Failed to delete user:', error);
-      alert('Failed to delete user');
+      toast.error('Failed to delete user');
+    } finally {
+      setShowConfirmDialog(false);
+      setUserToDelete(null);
     }
   };
 
@@ -84,10 +97,11 @@ export default function Users() {
         await usersApi.create(formData);
       }
       setShowModal(false);
+      toast.success(editingUser ? 'User updated successfully' : 'User created successfully');
       await loadData();
     } catch (error: any) {
       console.error('Failed to save user:', error);
-      alert(error.response?.data?.error || 'Failed to save user');
+      toast.error(error.response?.data?.error || 'Failed to save user');
     }
   };
 
@@ -127,7 +141,7 @@ export default function Users() {
                   <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                   <td>
                     <button onClick={() => handleEdit(user)} className="btn-edit">Edit</button>
-                    <button onClick={() => handleDelete(user.id)} className="btn-delete">Delete</button>
+                    <button onClick={() => handleDeleteClick(user.id)} className="btn-delete">Delete</button>
                   </td>
                 </tr>
               ))
@@ -195,6 +209,20 @@ export default function Users() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={showConfirmDialog}
+        title="Delete User"
+        message="Are you sure you want to delete this user? This action cannot be undone."
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => {
+          setShowConfirmDialog(false);
+          setUserToDelete(null);
+        }}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
     </div>
   );
 }

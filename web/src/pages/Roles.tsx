@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { rolesApi, permissionsApi, Role, Permission, CreateRoleDto, UpdateRoleDto } from '../services/api';
+import ConfirmDialog from '../components/ConfirmDialog';
 import './Management.css';
 
 export default function Roles() {
@@ -8,6 +10,8 @@ export default function Roles() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [roleToDelete, setRoleToDelete] = useState<number | null>(null);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [formData, setFormData] = useState<CreateRoleDto>({
@@ -31,7 +35,7 @@ export default function Roles() {
       setPermissions(permissionsRes.data.data);
     } catch (error) {
       console.error('Failed to load data:', error);
-      alert('Failed to load data');
+      toast.error('Failed to load data');
     } finally {
       setLoading(false);
     }
@@ -58,14 +62,23 @@ export default function Roles() {
     setShowPermissionsModal(true);
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this role?')) return;
+  const handleDeleteClick = (id: number) => {
+    setRoleToDelete(id);
+    setShowConfirmDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!roleToDelete) return;
     try {
-      await rolesApi.delete(id);
+      await rolesApi.delete(roleToDelete);
+      toast.success('Role deleted successfully');
       await loadData();
     } catch (error) {
       console.error('Failed to delete role:', error);
-      alert('Failed to delete role');
+      toast.error('Failed to delete role');
+    } finally {
+      setShowConfirmDialog(false);
+      setRoleToDelete(null);
     }
   };
 
@@ -78,10 +91,11 @@ export default function Roles() {
         await rolesApi.create(formData);
       }
       setShowModal(false);
+      toast.success(editingRole ? 'Role updated successfully' : 'Role created successfully');
       await loadData();
     } catch (error: any) {
       console.error('Failed to save role:', error);
-      alert(error.response?.data?.error || 'Failed to save role');
+      toast.error(error.response?.data?.error || 'Failed to save role');
     }
   };
 
@@ -90,10 +104,11 @@ export default function Roles() {
     try {
       await rolesApi.assignPermissions(selectedRole.id, selectedPermissions);
       setShowPermissionsModal(false);
+      toast.success('Permissions assigned successfully');
       await loadData();
     } catch (error: any) {
       console.error('Failed to save permissions:', error);
-      alert(error.response?.data?.error || 'Failed to save permissions');
+      toast.error(error.response?.data?.error || 'Failed to save permissions');
     }
   };
 
@@ -134,7 +149,7 @@ export default function Roles() {
                   <td>
                     <button onClick={() => handleEdit(role)} className="btn-edit">Edit</button>
                     <button onClick={() => handleManagePermissions(role)} className="btn-permissions">Permissions</button>
-                    <button onClick={() => handleDelete(role.id)} className="btn-delete">Delete</button>
+                    <button onClick={() => handleDeleteClick(role.id)} className="btn-delete">Delete</button>
                   </td>
                 </tr>
               ))
@@ -207,6 +222,20 @@ export default function Roles() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={showConfirmDialog}
+        title="Delete Role"
+        message="Are you sure you want to delete this role? This action cannot be undone."
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => {
+          setShowConfirmDialog(false);
+          setRoleToDelete(null);
+        }}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { permissionsApi, Permission } from '../services/api';
 import './Management.css';
 
@@ -19,7 +20,7 @@ export default function Permissions() {
       setPermissions(res.data.data);
     } catch (error) {
       console.error('Failed to load data:', error);
-      alert('Failed to load data');
+      toast.error('Failed to load data');
     } finally {
       setLoading(false);
     }
@@ -30,10 +31,10 @@ export default function Permissions() {
       setSyncing(true);
       const res = await permissionsApi.sync();
       setPermissions(res.data.data);
-      alert(res.data.message || `Synced ${res.data.data.length} permissions from routes`);
+      toast.success(res.data.message || `Synced ${res.data.data.length} permissions from routes`);
     } catch (error: any) {
       console.error('Failed to sync permissions:', error);
-      alert(error.response?.data?.error || 'Failed to sync permissions');
+      toast.error(error.response?.data?.error || 'Failed to sync permissions');
     } finally {
       setSyncing(false);
     }

@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { clientsApi, Client } from '../services/api';
+import ConfirmDialog from '../components/ConfirmDialog';
 import './Management.css';
 
 export default function Clients() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState<number | null>(null);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [formData, setFormData] = useState({ name: '' });
 
@@ -20,7 +24,7 @@ export default function Clients() {
       setClients(res.data.data);
     } catch (error) {
       console.error('Failed to load data:', error);
-      alert('Failed to load data');
+      toast.error('Failed to load data');
     } finally {
       setLoading(false);
     }
@@ -38,14 +42,23 @@ export default function Clients() {
     setShowModal(true);
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this client?')) return;
+  const handleDeleteClick = (id: number) => {
+    setClientToDelete(id);
+    setShowConfirmDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!clientToDelete) return;
     try {
-      await clientsApi.delete(id);
+      await clientsApi.delete(clientToDelete);
+      toast.success('Client deleted successfully');
       await loadData();
     } catch (error) {
       console.error('Failed to delete client:', error);
-      alert('Failed to delete client');
+      toast.error('Failed to delete client');
+    } finally {
+      setShowConfirmDialog(false);
+      setClientToDelete(null);
     }
   };
 
@@ -58,10 +71,11 @@ export default function Clients() {
         await clientsApi.create(formData);
       }
       setShowModal(false);
+      toast.success(editingClient ? 'Client updated successfully' : 'Client created successfully');
       await loadData();
     } catch (error: any) {
       console.error('Failed to save client:', error);
-      alert(error.response?.data?.error || 'Failed to save client');
+      toast.error(error.response?.data?.error || 'Failed to save client');
     }
   };
 
@@ -99,7 +113,7 @@ export default function Clients() {
                   <td>{new Date(client.createdAt).toLocaleDateString()}</td>
                   <td>
                     <button onClick={() => handleEdit(client)} className="btn-edit">Edit</button>
-                    <button onClick={() => handleDelete(client.id)} className="btn-delete">Delete</button>
+                    <button onClick={() => handleDeleteClick(client.id)} className="btn-delete">Delete</button>
                   </td>
                 </tr>
               ))
@@ -130,6 +144,20 @@ export default function Clients() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={showConfirmDialog}
+        title="Delete Client"
+        message="Are you sure you want to delete this client? This action cannot be undone."
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => {
+          setShowConfirmDialog(false);
+          setClientToDelete(null);
+        }}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
     </div>
   );
 }
