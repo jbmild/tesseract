@@ -74,6 +74,10 @@ async function bootstrap() {
       const permissionsService = new PermissionsService();
       const syncedPermissions = await permissionsService.syncFromRoutes(app);
       console.log(`✅ Synced ${syncedPermissions.length} permissions from routes`);
+      
+      // Run seed migration after permissions are synced
+      const { runSeedMigration } = await import('./migrations/seed-runner');
+      await runSeedMigration();
     } catch (error) {
       console.warn('⚠️  Failed to sync permissions on startup:', error);
     }
