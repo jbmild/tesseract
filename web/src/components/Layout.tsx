@@ -1,76 +1,46 @@
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { useClient } from '../contexts/ClientContext';
+import { useState } from 'react';
+import { Outlet } from 'react-router-dom';
+import Sidebar from './Sidebar';
 import './Layout.css';
 
 export default function Layout() {
-  const location = useLocation();
-  const { user, logout } = useAuth();
-  const { selectedClient, availableClients, setSelectedClient } = useClient();
-  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
   };
 
-  const handleClientChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const clientId = parseInt(e.target.value);
-    const client = availableClients.find(c => c.id === clientId);
-    setSelectedClient(client || null);
+  const closeSidebar = () => {
+    setSidebarOpen(false);
   };
 
   return (
     <div className="layout">
-      <header className="layout-header">
-        <div>
-          <h1>🧊 Tesseract</h1>
-          <p className="subtitle">The cosmic cube that controls your warehouse Space</p>
-        </div>
-        <div className="user-info">
-          <span className="username">{user?.username}</span>
-          {user?.role && <span className="user-role">{user.role.name}</span>}
-          {availableClients.length > 0 && (
-            <select
-              className="client-selector"
-              value={selectedClient?.id || ''}
-              onChange={handleClientChange}
-            >
-              <option value="">Select Client</option>
-              {availableClients.map((client) => (
-                <option key={client.id} value={client.id}>
-                  {client.name}
-                </option>
-              ))}
-            </select>
-          )}
-          <button onClick={handleLogout} className="btn-logout">
-            Logout
-          </button>
-        </div>
-      </header>
+      {/* Hamburger Menu Button */}
+      <button className="hamburger-btn" onClick={toggleSidebar} aria-label="Toggle menu">
+        <span className={`hamburger-icon ${sidebarOpen ? 'open' : ''}`}>
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      </button>
 
-      <nav className="layout-nav">
-        <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
-          Home
-        </Link>
-        <Link to="/users" className={location.pathname === '/users' ? 'active' : ''}>
-          👥 Users
-        </Link>
-        <Link to="/clients" className={location.pathname === '/clients' ? 'active' : ''}>
-          🏢 Clients
-        </Link>
-        <Link to="/roles" className={location.pathname === '/roles' ? 'active' : ''}>
-          🔐 Roles
-        </Link>
-        <Link to="/permissions" className={location.pathname === '/permissions' ? 'active' : ''}>
-          🔑 Permissions
-        </Link>
-      </nav>
+      {/* Sidebar */}
+      <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
-      <main className="layout-main">
-        <Outlet />
-      </main>
+      {/* Main Content */}
+      <div className="layout-content">
+        <header className="layout-header">
+          <div>
+            <h1>🧊 Tesseract</h1>
+            <p className="subtitle">The cosmic cube that controls your warehouse Space</p>
+          </div>
+        </header>
+
+        <main className="layout-main">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }
