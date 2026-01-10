@@ -7,6 +7,7 @@ import { Permission } from '../permissions/permission.entity';
 /**
  * Run seed migration for initial data
  * This runs after permissions are synced to ensure all permissions exist
+ * Ensures systemadmin role always has all permissions on every startup
  */
 export async function runSeedMigration(): Promise<void> {
   const queryRunner = AppDataSource.createQueryRunner();
@@ -14,18 +15,6 @@ export async function runSeedMigration(): Promise<void> {
   try {
     await queryRunner.connect();
     await queryRunner.startTransaction();
-
-    // Check if admin user already exists
-    const userRepository = queryRunner.manager.getRepository(User);
-    const existingAdmin = await userRepository.findOne({
-      where: { username: 'admin' },
-    });
-
-    if (existingAdmin) {
-      console.log('ℹ️  Admin user already exists, skipping seed');
-      await queryRunner.commitTransaction();
-      return;
-    }
 
     // Get all permissions
     const permissionRepository = queryRunner.manager.getRepository(Permission);
@@ -37,41 +26,84 @@ export async function runSeedMigration(): Promise<void> {
       return;
     }
 
-    // Create or update admin role (case-insensitive search)
+    // Check if old "admin" role exists and rename it to "systemadmin"
     const roleRepository = queryRunner.manager.getRepository(Role);
-    let adminRole = await roleRepository
+    let oldAdminRole = await roleRepository
       .createQueryBuilder('role')
       .where('LOWER(role.name) = LOWER(:name)', { name: 'admin' })
       .leftJoinAndSelect('role.permissions', 'permissions')
       .getOne();
 
-    if (!adminRole) {
-      adminRole = roleRepository.create({
-        name: 'admin',
-        description: 'Administrator role with full access to all features',
-        permissions: allPermissions,
-      });
-      adminRole = await roleRepository.save(adminRole);
-      console.log(`✅ Created admin role with ${allPermissions.length} permissions`);
-    } else {
-      // Update existing admin role with all permissions
-      adminRole.permissions = allPermissions;
-      adminRole = await roleRepository.save(adminRole);
-      console.log(`✅ Updated admin role with ${allPermissions.length} permissions`);
+    if (oldAdminRole) {
+      // Rename admin to systemadmin
+      oldAdminRole.name = 'systemadmin';
+      oldAdminRole = await roleRepository.save(oldAdminRole);
+      console.log('✅ Renamed admin role to systemadmin');
     }
 
-    // Create admin user
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash('12345', saltRounds);
+    // Always ensure systemadmin role exists and has all permissions (case-insensitive search)
+    let systemAdminRole = await roleRepository
+      .createQueryBuilder('role')
+      .where('LOWER(role.name) = LOWER(:name)', { name: 'systemadmin' })
+      .leftJoinAndSelect('role.permissions', 'permissions')
+      .getOne();
 
-    const adminUser = userRepository.create({
-      username: 'admin',
-      password: hashedPassword,
-      roleId: adminRole.id,
+    if (!systemAdminRole) {
+      // Create systemadmin role with all permissions
+      systemAdminRole = roleRepository.create({
+        name: 'systemadmin',
+        description: 'System Administrator role with full access to all features',
+        permissions: allPermissions,
+      });
+      systemAdminRole = await roleRepository.save(systemAdminRole);
+      console.log(`✅ Created systemadmin role with ${allPermissions.length} permissions`);
+    } else {
+      // Always update systemadmin role to have all permissions (in case new permissions were added)
+      const currentPermissionIds = systemAdminRole.permissions?.map(p => p.id).sort() || [];
+      const allPermissionIds = allPermissions.map(p => p.id).sort();
+      
+      const permissionsChanged = 
+        currentPermissionIds.length !== allPermissionIds.length ||
+        !currentPermissionIds.every((id, index) => id === allPermissionIds[index]);
+
+      if (permissionsChanged) {
+        systemAdminRole.permissions = allPermissions;
+        systemAdminRole = await roleRepository.save(systemAdminRole);
+        console.log(`✅ Updated systemadmin role with ${allPermissions.length} permissions (was ${currentPermissionIds.length})`);
+      } else {
+        console.log(`ℹ️  Systemadmin role already has all ${allPermissions.length} permissions`);
+      }
+    }
+
+    // Ensure admin user exists
+    const userRepository = queryRunner.manager.getRepository(User);
+    let adminUser = await userRepository.findOne({
+      where: { username: 'admin' },
     });
 
-    await userRepository.save(adminUser);
-    console.log('✅ Created admin user (username: admin, password: 12345)');
+    if (!adminUser) {
+      // Create admin user
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash('12345', saltRounds);
+
+      adminUser = userRepository.create({
+        username: 'admin',
+        password: hashedPassword,
+        roleId: systemAdminRole.id,
+      });
+
+      await userRepository.save(adminUser);
+      console.log('✅ Created admin user (username: admin, password: 12345)');
+    } else {
+      // Ensure admin user is assigned to systemadmin role
+      if (adminUser.roleId !== systemAdminRole.id) {
+        adminUser.roleId = systemAdminRole.id;
+        await userRepository.save(adminUser);
+        console.log('✅ Updated admin user to use systemadmin role');
+      } else {
+        console.log('ℹ️  Admin user already exists and is assigned to systemadmin role');
+      }
+    }
 
     await queryRunner.commitTransaction();
   } catch (error) {

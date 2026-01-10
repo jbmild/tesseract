@@ -34,14 +34,14 @@ export default {
         console.log('  → Removed admin user');
       }
 
-      // Remove admin role (optional - you might want to keep it)
-      const adminRole = await roleRepository.findOne({
-        where: { name: 'admin' },
+      // Remove systemadmin role (optional - you might want to keep it)
+      const systemAdminRole = await roleRepository.findOne({
+        where: { name: 'systemadmin' },
       });
 
-      if (adminRole) {
-        await roleRepository.remove(adminRole);
-        console.log('  → Removed admin role');
+      if (systemAdminRole) {
+        await roleRepository.remove(systemAdminRole);
+        console.log('  → Removed systemadmin role');
       }
 
       await queryRunner.commitTransaction();
