@@ -1,15 +1,23 @@
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import 'reflect-metadata';
-import dotenv from 'dotenv';
 import { initializeDatabase } from './database/database';
 import healthRoutes from './routes/health.routes';
 import usersRoutes from './routes/users.routes';
 import ordersRoutes from './routes/orders.routes';
 import productsRoutes from './routes/products.routes';
 
-// Load environment variables
-dotenv.config();
+// Load environment variables (only if not already set, e.g., in Docker)
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const dotenv = require('dotenv');
+  if (dotenv && dotenv.config) {
+    dotenv.config();
+  }
+} catch (error) {
+  // dotenv not available or already configured via environment
+  console.log('Environment variables loaded from system');
+}
 
 const app: Express = express();
 const port = process.env.PORT || 3000;
