@@ -1,14 +1,31 @@
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import './Layout.css';
 
 export default function Layout() {
   const location = useLocation();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <div className="layout">
       <header className="layout-header">
-        <h1>🧊 Tesseract</h1>
-        <p className="subtitle">The cosmic cube that controls your warehouse Space</p>
+        <div>
+          <h1>🧊 Tesseract</h1>
+          <p className="subtitle">The cosmic cube that controls your warehouse Space</p>
+        </div>
+        <div className="user-info">
+          <span className="username">{user?.username}</span>
+          {user?.role && <span className="user-role">{user.role.name}</span>}
+          <button onClick={handleLogout} className="btn-logout">
+            Logout
+          </button>
+        </div>
       </header>
 
       <nav className="layout-nav">

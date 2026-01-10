@@ -9,6 +9,37 @@ export const api = axios.create({
   },
 });
 
+// Add token to requests if available
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Handle 401 errors (unauthorized) - redirect to login
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Clear auth data
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      // Redirect to login if not already there
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Types
 export interface User {
   id: number;
@@ -125,4 +156,25 @@ export const clientsApi = {
   create: (data: { name: string }) => api.post<{ success: boolean; data: Client }>('/api/clients', data),
   update: (id: number, data: { name: string }) => api.put<{ success: boolean; data: Client }>(`/api/clients/${id}`, data),
   delete: (id: number) => api.delete<{ success: boolean; message: string }>(`/api/clients/${id}`),
+};
+
+// Auth API
+export interface LoginResponse {
+  user: User;
+  token: string;
+}
+
+export const authApi = {
+  login: async (username: string, password: string): Promise<LoginResponse> => {
+    const response = await api.post<{ success: boolean; data: LoginResponse }>('/api/auth/login', {
+      username,
+      password,
+    });
+    return response.data.data;
+  },
+  logout: () => api.post<{ success: boolean; message: string }>('/api/auth/logout'),
+  getCurrentUser: async (): Promise<User> => {
+    const response = await api.get<{ success: boolean; data: User }>('/api/auth/me');
+    return response.data.data;
+  },
 };

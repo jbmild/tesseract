@@ -3,6 +3,7 @@ import cors from 'cors';
 import 'reflect-metadata';
 import { initializeDatabase } from './database/database';
 import healthRoutes from './routes/health.routes';
+import authRoutes from './routes/auth.routes';
 import usersRoutes from './routes/users.routes';
 import ordersRoutes from './routes/orders.routes';
 import productsRoutes from './routes/products.routes';
@@ -10,6 +11,7 @@ import rolesRoutes from './routes/roles.routes';
 import permissionsRoutes, { setAppInstance } from './routes/permissions.routes';
 import clientsRoutes from './routes/clients.routes';
 import { PermissionsService } from './permissions/permissions.service';
+import { authenticateToken } from './auth/auth.middleware';
 
 // Load environment variables (only if not already set, e.g., in Docker)
 try {
@@ -35,14 +37,17 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
+// Public routes
 app.use('/api/health', healthRoutes);
-app.use('/api/users', usersRoutes);
-app.use('/api/orders', ordersRoutes);
-app.use('/api/products', productsRoutes);
-app.use('/api/roles', rolesRoutes);
-app.use('/api/permissions', permissionsRoutes);
-app.use('/api/clients', clientsRoutes);
+app.use('/api/auth', authRoutes);
+
+// Protected routes (require authentication)
+app.use('/api/users', authenticateToken, usersRoutes);
+app.use('/api/orders', authenticateToken, ordersRoutes);
+app.use('/api/products', authenticateToken, productsRoutes);
+app.use('/api/roles', authenticateToken, rolesRoutes);
+app.use('/api/permissions', authenticateToken, permissionsRoutes);
+app.use('/api/clients', authenticateToken, clientsRoutes);
 
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
