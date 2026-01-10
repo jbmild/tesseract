@@ -33,9 +33,10 @@ export default function Roles() {
       ]);
       setRoles(rolesRes.data.data);
       setPermissions(permissionsRes.data.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load data:', error);
-      toast.error('Failed to load data');
+      const errorMessage = error.response?.data?.error || error.message || 'connection issue';
+      toast.error(`Oops! We couldn't load the roles and permissions. ${errorMessage === 'connection issue' ? 'Please check your internet connection and try again.' : `Error: ${errorMessage}`}`);
     } finally {
       setLoading(false);
     }
@@ -70,12 +71,18 @@ export default function Roles() {
   const handleDeleteConfirm = async () => {
     if (!roleToDelete) return;
     try {
+      const role = roles.find(r => r.id === roleToDelete);
       await rolesApi.delete(roleToDelete);
-      toast.success('Role deleted successfully');
+      toast.success(`Great! The role "${role?.name || 'Role'}" has been removed.`);
       await loadData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete role:', error);
-      toast.error('Failed to delete role');
+      const errorMessage = error.response?.data?.error || error.message || 'something went wrong';
+      if (errorMessage.includes('permission') || errorMessage.includes('unauthorized')) {
+        toast.error(`Sorry, you don't have permission to delete roles. Please contact your administrator.`);
+      } else {
+        toast.error(`We couldn't delete this role. ${errorMessage === 'something went wrong' ? 'It might be assigned to users. Please check and try again.' : errorMessage}`);
+      }
     } finally {
       setShowConfirmDialog(false);
       setRoleToDelete(null);
@@ -91,11 +98,30 @@ export default function Roles() {
         await rolesApi.create(formData);
       }
       setShowModal(false);
-      toast.success(editingRole ? 'Role updated successfully' : 'Role created successfully');
+      if (editingRole) {
+        toast.success(`Perfect! The role "${formData.name}" has been updated.`);
+      } else {
+        toast.success(`Awesome! New role "${formData.name}" has been created successfully.`);
+      }
       await loadData();
     } catch (error: any) {
       console.error('Failed to save role:', error);
-      toast.error(error.response?.data?.error || 'Failed to save role');
+      const errorMessage = error.response?.data?.error || error.message || 'something went wrong';
+      const action = editingRole ? 'update' : 'create';
+      
+      // Provide more helpful error messages
+      let userFriendlyMessage = errorMessage;
+      if (errorMessage.includes('unique') || errorMessage.includes('duplicate')) {
+        userFriendlyMessage = `The role name "${formData.name}" already exists. Please choose a different name.`;
+      } else if (errorMessage.includes('validation') || errorMessage.includes('required')) {
+        userFriendlyMessage = 'Please make sure the role name is filled in correctly.';
+      } else if (errorMessage.includes('permission') || errorMessage.includes('unauthorized')) {
+        userFriendlyMessage = 'You don\'t have permission to do this. Please contact your administrator if you need access.';
+      } else if (errorMessage === 'something went wrong') {
+        userFriendlyMessage = 'We couldn\'t save the role. Please check your connection and try again.';
+      }
+      
+      toast.error(`Sorry, we couldn't ${action} the role. ${userFriendlyMessage}`);
     }
   };
 
@@ -104,11 +130,21 @@ export default function Roles() {
     try {
       await rolesApi.assignPermissions(selectedRole.id, selectedPermissions);
       setShowPermissionsModal(false);
-      toast.success('Permissions assigned successfully');
+      const permissionCount = selectedPermissions.length;
+      if (permissionCount === 0) {
+        toast.success(`All permissions have been removed from the role "${selectedRole.name}".`);
+      } else {
+        toast.success(`Perfect! ${permissionCount} permission${permissionCount !== 1 ? 's have' : ' has'} been assigned to "${selectedRole.name}".`);
+      }
       await loadData();
     } catch (error: any) {
       console.error('Failed to save permissions:', error);
-      toast.error(error.response?.data?.error || 'Failed to save permissions');
+      const errorMessage = error.response?.data?.error || error.message || 'something went wrong';
+      if (errorMessage.includes('permission') || errorMessage.includes('unauthorized')) {
+        toast.error(`Sorry, you don't have permission to assign permissions. Please contact your administrator.`);
+      } else {
+        toast.error(`We couldn't save the permissions for "${selectedRole.name}". ${errorMessage === 'something went wrong' ? 'Please try again in a moment.' : errorMessage}`);
+      }
     }
   };
 

@@ -18,9 +18,10 @@ export default function Permissions() {
       setLoading(true);
       const res = await permissionsApi.getAll();
       setPermissions(res.data.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load data:', error);
-      toast.error('Failed to load data');
+      const errorMessage = error.response?.data?.error || error.message || 'connection issue';
+      toast.error(`Oops! We couldn't load the permissions list. ${errorMessage === 'connection issue' ? 'Please check your internet connection and try again.' : `Error: ${errorMessage}`}`);
     } finally {
       setLoading(false);
     }
@@ -31,10 +32,16 @@ export default function Permissions() {
       setSyncing(true);
       const res = await permissionsApi.sync();
       setPermissions(res.data.data);
-      toast.success(res.data.message || `Synced ${res.data.data.length} permissions from routes`);
+      const permissionCount = res.data.data.length;
+      toast.success(`Great! We found and synced ${permissionCount} permission${permissionCount !== 1 ? 's' : ''} from your backend routes.`);
     } catch (error: any) {
       console.error('Failed to sync permissions:', error);
-      toast.error(error.response?.data?.error || 'Failed to sync permissions');
+      const errorMessage = error.response?.data?.error || error.message || 'something went wrong';
+      if (errorMessage.includes('connection') || errorMessage.includes('network')) {
+        toast.error(`We couldn't connect to the backend. Please make sure your server is running and try again.`);
+      } else {
+        toast.error(`We couldn't sync the permissions. ${errorMessage === 'something went wrong' ? 'Please check your backend connection and try again.' : errorMessage}`);
+      }
     } finally {
       setSyncing(false);
     }

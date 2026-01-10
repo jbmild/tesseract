@@ -22,9 +22,10 @@ export default function Clients() {
       setLoading(true);
       const res = await clientsApi.getAll();
       setClients(res.data.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load data:', error);
-      toast.error('Failed to load data');
+      const errorMessage = error.response?.data?.error || error.message || 'connection issue';
+      toast.error(`Oops! We couldn't load the clients list. ${errorMessage === 'connection issue' ? 'Please check your internet connection and try again.' : `Error: ${errorMessage}`}`);
     } finally {
       setLoading(false);
     }
@@ -50,12 +51,18 @@ export default function Clients() {
   const handleDeleteConfirm = async () => {
     if (!clientToDelete) return;
     try {
+      const client = clients.find(c => c.id === clientToDelete);
       await clientsApi.delete(clientToDelete);
-      toast.success('Client deleted successfully');
+      toast.success(`Great! The client "${client?.name || 'Client'}" has been removed.`);
       await loadData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete client:', error);
-      toast.error('Failed to delete client');
+      const errorMessage = error.response?.data?.error || error.message || 'something went wrong';
+      if (errorMessage.includes('permission') || errorMessage.includes('unauthorized')) {
+        toast.error(`Sorry, you don't have permission to delete clients. Please contact your administrator.`);
+      } else {
+        toast.error(`We couldn't delete this client. ${errorMessage === 'something went wrong' ? 'They might have users assigned. Please check and try again.' : errorMessage}`);
+      }
     } finally {
       setShowConfirmDialog(false);
       setClientToDelete(null);
@@ -71,11 +78,30 @@ export default function Clients() {
         await clientsApi.create(formData);
       }
       setShowModal(false);
-      toast.success(editingClient ? 'Client updated successfully' : 'Client created successfully');
+      if (editingClient) {
+        toast.success(`Perfect! The client "${formData.name}" has been updated.`);
+      } else {
+        toast.success(`Awesome! New client "${formData.name}" has been added successfully.`);
+      }
       await loadData();
     } catch (error: any) {
       console.error('Failed to save client:', error);
-      toast.error(error.response?.data?.error || 'Failed to save client');
+      const errorMessage = error.response?.data?.error || error.message || 'something went wrong';
+      const action = editingClient ? 'update' : 'create';
+      
+      // Provide more helpful error messages
+      let userFriendlyMessage = errorMessage;
+      if (errorMessage.includes('unique') || errorMessage.includes('duplicate')) {
+        userFriendlyMessage = `The client name "${formData.name}" already exists. Please choose a different name.`;
+      } else if (errorMessage.includes('validation') || errorMessage.includes('required')) {
+        userFriendlyMessage = 'Please make sure the client name is filled in correctly.';
+      } else if (errorMessage.includes('permission') || errorMessage.includes('unauthorized')) {
+        userFriendlyMessage = 'You don\'t have permission to do this. Please contact your administrator if you need access.';
+      } else if (errorMessage === 'something went wrong') {
+        userFriendlyMessage = 'We couldn\'t save the client. Please check your connection and try again.';
+      }
+      
+      toast.error(`Sorry, we couldn't ${action} the client. ${userFriendlyMessage}`);
     }
   };
 

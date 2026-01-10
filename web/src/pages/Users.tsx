@@ -35,9 +35,10 @@ export default function Users() {
       setUsers(usersRes.data.data);
       setRoles(rolesRes.data.data);
       setClients(clientsRes.data.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load data:', error);
-      toast.error('Failed to load data');
+      const errorMessage = error.response?.data?.error || error.message || 'connection issue';
+      toast.error(`Oops! We couldn't load the users list. ${errorMessage === 'connection issue' ? 'Please check your internet connection and try again.' : `Error: ${errorMessage}`}`);
     } finally {
       setLoading(false);
     }
@@ -68,12 +69,18 @@ export default function Users() {
   const handleDeleteConfirm = async () => {
     if (!userToDelete) return;
     try {
+      const user = users.find(u => u.id === userToDelete);
       await usersApi.delete(userToDelete);
-      toast.success('User deleted successfully');
+      toast.success(`Great! The user "${user?.username || 'User'}" has been removed.`);
       await loadData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete user:', error);
-      toast.error('Failed to delete user');
+      const errorMessage = error.response?.data?.error || error.message || 'something went wrong';
+      if (errorMessage.includes('permission') || errorMessage.includes('unauthorized')) {
+        toast.error(`Sorry, you don't have permission to delete users. Please contact your administrator.`);
+      } else {
+        toast.error(`We couldn't delete this user. ${errorMessage === 'something went wrong' ? 'They might be assigned to important records. Please check and try again.' : errorMessage}`);
+      }
     } finally {
       setShowConfirmDialog(false);
       setUserToDelete(null);
@@ -97,11 +104,30 @@ export default function Users() {
         await usersApi.create(formData);
       }
       setShowModal(false);
-      toast.success(editingUser ? 'User updated successfully' : 'User created successfully');
+      if (editingUser) {
+        toast.success(`Perfect! The user "${formData.username}" has been updated.`);
+      } else {
+        toast.success(`Awesome! New user "${formData.username}" has been added successfully.`);
+      }
       await loadData();
     } catch (error: any) {
       console.error('Failed to save user:', error);
-      toast.error(error.response?.data?.error || 'Failed to save user');
+      const errorMessage = error.response?.data?.error || error.message || 'something went wrong';
+      const action = editingUser ? 'update' : 'create';
+      
+      // Provide more helpful error messages
+      let userFriendlyMessage = errorMessage;
+      if (errorMessage.includes('unique') || errorMessage.includes('duplicate')) {
+        userFriendlyMessage = `The username "${formData.username}" is already taken. Please choose a different one.`;
+      } else if (errorMessage.includes('validation') || errorMessage.includes('required')) {
+        userFriendlyMessage = 'Please make sure all required fields are filled in correctly.';
+      } else if (errorMessage.includes('permission') || errorMessage.includes('unauthorized')) {
+        userFriendlyMessage = 'You don\'t have permission to do this. Please contact your administrator if you need access.';
+      } else if (errorMessage === 'something went wrong') {
+        userFriendlyMessage = 'We couldn\'t save the user. Please check your connection and try again.';
+      }
+      
+      toast.error(`Sorry, we couldn't ${action} the user. ${userFriendlyMessage}`);
     }
   };
 
