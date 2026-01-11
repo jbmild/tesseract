@@ -26,11 +26,11 @@ export async function runSeedMigration(): Promise<void> {
       return;
     }
 
-    // Check if old "admin" role exists and rename it to "systemadmin"
+    // Check if old "admin" role exists (global only) and rename it to "systemadmin"
     const roleRepository = queryRunner.manager.getRepository(Role);
     let oldAdminRole = await roleRepository
       .createQueryBuilder('role')
-      .where('LOWER(role.name) = LOWER(:name)', { name: 'admin' })
+      .where('LOWER(role.name) = LOWER(:name) AND role.clientId IS NULL', { name: 'admin' })
       .leftJoinAndSelect('role.permissions', 'permissions')
       .getOne();
 
@@ -41,12 +41,33 @@ export async function runSeedMigration(): Promise<void> {
       console.log('✅ Renamed admin role to systemadmin');
     }
 
-    // Always ensure systemadmin role exists and has all permissions (case-insensitive search)
-    let systemAdminRole = await roleRepository
+    // Always ensure systemadmin role exists (GLOBAL ONLY - clientId = null) and has all permissions
+    // First, check if there are any duplicate systemadmin roles (should only be one global)
+    const allSystemAdminRoles = await roleRepository
       .createQueryBuilder('role')
       .where('LOWER(role.name) = LOWER(:name)', { name: 'systemadmin' })
-      .leftJoinAndSelect('role.permissions', 'permissions')
-      .getOne();
+      .getMany();
+
+    // Find the global systemadmin role (clientId = null)
+    let systemAdminRole = allSystemAdminRoles.find(r => r.clientId === null);
+
+    // If there are multiple systemadmin roles, keep only the global one
+    if (allSystemAdminRoles.length > 1) {
+      const nonGlobalSystemAdminRoles = allSystemAdminRoles.filter(r => r.clientId !== null);
+      if (nonGlobalSystemAdminRoles.length > 0) {
+        console.log(`⚠️  Found ${nonGlobalSystemAdminRoles.length} non-global systemadmin role(s). These will remain as client-specific roles.`);
+        console.log(`   Note: Only the global systemadmin role (clientId = null) is managed by the seed migration.`);
+      }
+    }
+
+    // Load the global systemadmin role with permissions if it exists
+    if (systemAdminRole) {
+      systemAdminRole = await roleRepository
+        .createQueryBuilder('role')
+        .where('role.id = :id', { id: systemAdminRole.id })
+        .leftJoinAndSelect('role.permissions', 'permissions')
+        .getOne() || systemAdminRole;
+    }
 
     if (!systemAdminRole) {
       // Create systemadmin role with all permissions (clientId = null for global role)

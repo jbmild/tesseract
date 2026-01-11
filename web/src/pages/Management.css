@@ -275,3 +275,93 @@
   margin-top: 0.25rem;
   margin-bottom: 0;
 }
+
+/* Permissions Tree Styles */
+.permissions-tree {
+  max-height: 500px;
+  overflow-y: auto;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.permission-resource-group {
+  margin-bottom: 1rem;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1rem;
+  transition: box-shadow 0.2s;
+}
+
+.permission-resource-group:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.resource-header {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.resource-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  margin-right: 10px;
+  font-size: 14px;
+  color: #667eea;
+  transition: transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.resource-toggle:hover {
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+
+.resource-checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  flex: 1;
+}
+
+.resource-checkbox-label input[type="checkbox"] {
+  margin-right: 8px;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+}
+
+.permission-methods {
+  margin-left: 30px;
+  margin-top: 12px;
+  padding-left: 10px;
+  border-left: 2px solid #e0e0e0;
+}
+
+.permission-methods .permission-item {
+  padding: 0.75rem;
+  border: none;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 0;
+  background: transparent;
+}
+
+.permission-methods .permission-item:last-child {
+  border-bottom: none;
+}
+
+.permission-methods .permission-item:hover {
+  background: #f8f9fa;
+  border-radius: 4px;
+}

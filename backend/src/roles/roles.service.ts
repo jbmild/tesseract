@@ -14,13 +14,16 @@ export class RolesService {
       relations: ['permissions'],
     };
     // Roles can be global (clientId = null) or client-specific
+    // If clientId is null or undefined (All selected), show ALL roles
     // If clientId is provided, show roles for that client OR global roles (null)
     if (clientId !== undefined && clientId !== null) {
+      // Show roles for the specific client AND global roles
       findOptions.where = [
         { clientId: null }, // Global roles
         { clientId }, // Client-specific roles
       ];
     }
+    // If clientId is null or undefined, no where clause = return all roles
     return this.rolesRepository.find(findOptions);
   }
 
@@ -76,9 +79,11 @@ export class RolesService {
       throw new Error('Role not found');
     }
     
+    // Use clientId parameter if provided, otherwise use clientId from roleData, otherwise keep existing
+    const finalClientId = clientId !== undefined ? clientId : (roleData.clientId !== undefined ? roleData.clientId : role.clientId);
+    
     // If name is being updated, check for duplicates
     if (roleData.name && roleData.name !== role.name) {
-      const finalClientId = roleData.clientId !== undefined ? roleData.clientId : role.clientId;
       const existingRole = await this.rolesRepository.findOne({
         where: { name: roleData.name, clientId: finalClientId },
       });
@@ -88,7 +93,9 @@ export class RolesService {
       }
     }
     
+    // Update role data, including clientId
     Object.assign(role, roleData);
+    role.clientId = finalClientId;
     return this.rolesRepository.save(role);
   }
 

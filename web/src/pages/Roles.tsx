@@ -1,10 +1,90 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
 import { rolesApi, permissionsApi, Role, Permission, CreateRoleDto, UpdateRoleDto } from '../services/api';
+import { useClient } from '../contexts/ClientContext';
 import ConfirmDialog from '../components/ConfirmDialog';
 import './Management.css';
 
+// Component for resource group in permissions tree
+interface ResourceGroupProps {
+  resource: string;
+  permissions: Permission[];
+  isExpanded: boolean;
+  selectedPermissions: number[];
+  onToggleResource: () => void;
+  onToggleAllInResource: () => void;
+  onTogglePermission: (permissionId: number, checked: boolean) => void;
+}
+
+function ResourceGroup({
+  resource,
+  permissions,
+  isExpanded,
+  selectedPermissions,
+  onToggleResource,
+  onToggleAllInResource,
+  onTogglePermission,
+}: ResourceGroupProps) {
+  const checkboxRef = useRef<HTMLInputElement>(null);
+  const isFullySelected = permissions.every(p => selectedPermissions.includes(p.id));
+  const isPartiallySelected = permissions.some(p => selectedPermissions.includes(p.id)) && !isFullySelected;
+
+  useEffect(() => {
+    if (checkboxRef.current) {
+      checkboxRef.current.indeterminate = isPartiallySelected;
+    }
+  }, [isPartiallySelected, selectedPermissions]);
+
+  return (
+    <div className="permission-resource-group">
+      <div className="resource-header">
+        <button
+          type="button"
+          className="resource-toggle"
+          onClick={onToggleResource}
+        >
+          {isExpanded ? '▼' : '▶'}
+        </button>
+        <label className="resource-checkbox-label">
+          <input
+            ref={checkboxRef}
+            type="checkbox"
+            checked={isFullySelected}
+            onChange={onToggleAllInResource}
+          />
+          <strong style={{ marginLeft: '8px', fontSize: '16px' }}>{resource}</strong>
+          <span style={{ marginLeft: '10px', color: '#666', fontSize: '14px' }}>
+            ({permissions.length} permission{permissions.length !== 1 ? 's' : ''})
+          </span>
+        </label>
+      </div>
+      {isExpanded && (
+        <div className="permission-methods">
+          {permissions
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((permission) => (
+              <label key={permission.id} className="permission-item">
+                <input
+                  type="checkbox"
+                  checked={selectedPermissions.includes(permission.id)}
+                  onChange={(e) => onTogglePermission(permission.id, e.target.checked)}
+                />
+                <span style={{ fontWeight: '500' }}>{permission.name}</span>
+                {permission.description && (
+                  <span style={{ marginLeft: '8px', color: '#666', fontSize: '0.9em' }}>
+                    - {permission.description}
+                  </span>
+                )}
+              </label>
+            ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Roles() {
+  const { clientChangeKey, selectedClient, availableClients } = useClient();
   const [roles, setRoles] = useState<Role[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,12 +97,14 @@ export default function Roles() {
   const [formData, setFormData] = useState<CreateRoleDto>({
     name: '',
     description: '',
+    clientId: null,
   });
   const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
+  const [expandedResources, setExpandedResources] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [clientChangeKey]); // Reload when client changes
 
   const loadData = async () => {
     try {
@@ -44,7 +126,12 @@ export default function Roles() {
 
   const handleCreate = () => {
     setEditingRole(null);
-    setFormData({ name: '', description: '' });
+    // If a client is selected, use it; otherwise allow selection (null for global)
+    setFormData({ 
+      name: '', 
+      description: '',
+      clientId: selectedClient ? selectedClient.id : null,
+    });
     setShowModal(true);
   };
 
@@ -53,6 +140,7 @@ export default function Roles() {
     setFormData({
       name: role.name,
       description: role.description || '',
+      clientId: role.clientId ?? null,
     });
     setShowModal(true);
   };
@@ -60,7 +148,49 @@ export default function Roles() {
   const handleManagePermissions = (role: Role) => {
     setSelectedRole(role);
     setSelectedPermissions(role.permissions?.map(p => p.id) || []);
+    // Expand all resources by default
+    const allResources = new Set(permissions.map(p => p.resource));
+    setExpandedResources(allResources);
     setShowPermissionsModal(true);
+  };
+
+  // Group permissions by resource
+  const permissionsByResource = permissions.reduce((acc, permission) => {
+    if (!acc[permission.resource]) {
+      acc[permission.resource] = [];
+    }
+    acc[permission.resource].push(permission);
+    return acc;
+  }, {} as Record<string, Permission[]>);
+
+  const toggleResource = (resource: string) => {
+    setExpandedResources(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(resource)) {
+        newSet.delete(resource);
+      } else {
+        newSet.add(resource);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleAllInResource = (resource: string) => {
+    const resourcePermissions = permissionsByResource[resource] || [];
+    const resourcePermissionIds = resourcePermissions.map(p => p.id);
+    const allSelected = resourcePermissionIds.every(id => selectedPermissions.includes(id));
+    
+    if (allSelected) {
+      // Deselect all in this resource
+      setSelectedPermissions(prev => prev.filter(id => !resourcePermissionIds.includes(id)));
+    } else {
+      // Select all in this resource
+      setSelectedPermissions(prev => {
+        const newSet = new Set(prev);
+        resourcePermissionIds.forEach(id => newSet.add(id));
+        return Array.from(newSet);
+      });
+    }
   };
 
   const handleDeleteClick = (id: number) => {
@@ -216,6 +346,40 @@ export default function Roles() {
                   rows={3}
                 />
               </div>
+              {/* Show client selector when "All" is selected (no client selected) */}
+              {!selectedClient && (
+                <div className="form-group">
+                  <label>Client (optional - leave empty for global role)</label>
+                  <select
+                    value={formData.clientId || ''}
+                    onChange={(e) => setFormData({ ...formData, clientId: e.target.value ? parseInt(e.target.value) : null })}
+                  >
+                    <option value="">Global Role (All Clients)</option>
+                    {availableClients.map((client) => (
+                      <option key={client.id} value={client.id}>
+                        {client.name}
+                      </option>
+                    ))}
+                  </select>
+                  <small style={{ display: 'block', marginTop: '5px', color: '#666' }}>
+                    Select a client to make this role client-specific, or leave empty for a global role
+                  </small>
+                </div>
+              )}
+              {/* Show info when a client is selected */}
+              {selectedClient && (
+                <div className="form-group">
+                  <div style={{ 
+                    padding: '10px', 
+                    backgroundColor: '#e3f2fd', 
+                    borderRadius: '4px', 
+                    color: '#1976d2',
+                    fontSize: '0.9rem'
+                  }}>
+                    ℹ️ This role will be created for <strong>{selectedClient.name}</strong>
+                  </div>
+                </div>
+              )}
               <div className="form-actions">
                 <button type="submit" className="btn-primary">Save</button>
                 <button type="button" onClick={() => setShowModal(false)} className="btn-secondary">Cancel</button>
@@ -229,29 +393,27 @@ export default function Roles() {
         <div className="modal-overlay" onClick={() => setShowPermissionsModal(false)}>
           <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
             <h3>Manage Permissions for {selectedRole.name}</h3>
-            <div className="permissions-list">
-              {permissions.map((permission) => (
-                <label key={permission.id} className="permission-item">
-                  <input
-                    type="checkbox"
-                    checked={selectedPermissions.includes(permission.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedPermissions([...selectedPermissions, permission.id]);
-                      } else {
-                        setSelectedPermissions(selectedPermissions.filter(id => id !== permission.id));
-                      }
-                    }}
-                  />
-                  <div>
-                    <strong>{permission.name}</strong>
-                    <span className="permission-resource">({permission.resource})</span>
-                    {permission.description && <p>{permission.description}</p>}
-                  </div>
-                </label>
+            <div className="permissions-tree">
+              {Object.keys(permissionsByResource).sort().map((resource) => (
+                <ResourceGroup
+                  key={resource}
+                  resource={resource}
+                  permissions={permissionsByResource[resource]}
+                  isExpanded={expandedResources.has(resource)}
+                  selectedPermissions={selectedPermissions}
+                  onToggleResource={() => toggleResource(resource)}
+                  onToggleAllInResource={() => toggleAllInResource(resource)}
+                  onTogglePermission={(permissionId, checked) => {
+                    if (checked) {
+                      setSelectedPermissions([...selectedPermissions, permissionId]);
+                    } else {
+                      setSelectedPermissions(selectedPermissions.filter(id => id !== permissionId));
+                    }
+                  }}
+                />
               ))}
             </div>
-            <div className="form-actions">
+            <div className="form-actions" style={{ marginTop: '20px' }}>
               <button onClick={handleSavePermissions} className="btn-primary">Save Permissions</button>
               <button onClick={() => setShowPermissionsModal(false)} className="btn-secondary">Cancel</button>
             </div>

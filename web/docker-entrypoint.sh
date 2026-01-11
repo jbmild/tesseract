@@ -6,7 +6,7 @@ cd /app || exit 1
 
 echo "🔍 Ensuring dependencies are installed..." >&2
 
-# Always run npm ci to ensure dependencies are present
+# Always run npm install to ensure dependencies are present
 # This handles cases where node_modules is empty or missing due to volume mounts
 if [ ! -f "package.json" ]; then
   echo "❌ package.json not found!" >&2
@@ -14,14 +14,9 @@ if [ ! -f "package.json" ]; then
 fi
 
 # Check if key dependencies exist, if not, install everything
-# Check for multiple critical packages to ensure all dependencies are present
-if [ ! -d "node_modules" ] || \
-   [ ! -d "node_modules/express" ] || \
-   [ ! -d "node_modules/typeorm" ] || \
-   [ ! -d "node_modules/jsonwebtoken" ] || \
-   [ ! -d "node_modules/bcrypt" ]; then
+if [ ! -d "node_modules" ] || [ ! -d "node_modules/react" ] || [ ! -d "node_modules/vite" ]; then
   echo "📦 Installing dependencies..." >&2
-  npm ci >&2
+  npm install >&2
   echo "✅ Dependencies installed successfully" >&2
 else
   echo "✅ Dependencies are present" >&2

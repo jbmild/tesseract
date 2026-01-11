@@ -32,8 +32,12 @@ router.get('/:id', async (req: ClientContextRequest, res: Response) => {
 
 router.post('/', async (req: ClientContextRequest, res: Response) => {
   try {
-    // clientId is optional for roles - can be null for global roles
-    const data = await rolesService.create(req.body, req.clientId);
+    // Use clientId from request body if provided, otherwise use context clientId
+    // This allows selecting a client when "All" is selected
+    const clientId = req.body.clientId !== undefined ? req.body.clientId : req.clientId;
+    // Ensure clientId is in the roleData for the service
+    const roleData = { ...req.body, clientId };
+    const data = await rolesService.create(roleData, clientId);
     res.status(201).json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, error: (error as Error).message });
@@ -46,7 +50,12 @@ router.put('/:id', async (req: ClientContextRequest, res: Response) => {
     if (isNaN(id)) {
       return res.status(400).json({ success: false, error: 'Invalid ID' });
     }
-    const data = await rolesService.update(id, req.body, req.clientId);
+    // Use clientId from request body if provided, otherwise use context clientId
+    // This allows selecting a client when "All" is selected
+    const clientId = req.body.clientId !== undefined ? req.body.clientId : req.clientId;
+    // Ensure clientId is in the roleData for the service
+    const roleData = { ...req.body, clientId };
+    const data = await rolesService.update(id, roleData, clientId);
     res.json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, error: (error as Error).message });

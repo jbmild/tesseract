@@ -66,6 +66,7 @@ export interface Role {
   id: number;
   name: string;
   description: string | null;
+  clientId?: number | null;
   permissions?: Permission[];
   createdAt: string;
   updatedAt: string;
@@ -106,11 +107,13 @@ export interface UpdateUserDto {
 export interface CreateRoleDto {
   name: string;
   description?: string | null;
+  clientId?: number | null;
 }
 
 export interface UpdateRoleDto {
   name?: string;
   description?: string | null;
+  clientId?: number | null;
 }
 
 export interface CreatePermissionDto {
