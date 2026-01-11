@@ -63,17 +63,6 @@ export default function Home() {
           </div>
         )}
       </div>
-
-      <div className="features">
-        <div className="feature-card">
-          <h3>👥 Users</h3>
-          <p>Manage users, roles, and permissions</p>
-        </div>
-        <div className="feature-card">
-          <h3>🏢 Clients</h3>
-          <p>Manage multi-tenant clients</p>
-        </div>
-      </div>
     </div>
   );
 }
