@@ -14,12 +14,16 @@ import initialSetup from './files/0001-initial-setup';
 import addExampleIndex from './files/0002-add-example-index';
 import seedInitialData from './files/0003-seed-initial-data';
 import userClientsManyToMany from './files/0004-user-clients-many-to-many';
+import addClientIdToTables from './files/0005-add-client-id-to-tables';
+import roleNameClientIdUnique from './files/0006-role-name-clientid-unique';
 
 const MIGRATION_REGISTRY: { [key: string]: { up: () => Promise<void>; down?: () => Promise<void> } } = {
   '0001-initial-setup': initialSetup,
   '0002-add-example-index': addExampleIndex,
   '0003-seed-initial-data': seedInitialData,
   '0004-user-clients-many-to-many': userClientsManyToMany,
+  '0005-add-client-id-to-tables': addClientIdToTables,
+  '0006-role-name-clientid-unique': roleNameClientIdUnique,
   // Add more migrations here as you create them
 };
 

@@ -1,0 +1,74 @@
+.backend-status {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+.backend-status:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse 2s infinite;
+}
+
+.backend-status.checking .status-dot {
+  background: #ffa500;
+  animation: pulse 1s infinite;
+}
+
+.backend-status.online .status-dot {
+  background: #10b981;
+  animation: pulse 2s infinite;
+}
+
+.backend-status.offline .status-dot {
+  background: #ef4444;
+  animation: pulse 1.5s infinite;
+}
+
+.status-text {
+  font-weight: 500;
+  color: #333;
+  text-transform: capitalize;
+}
+
+.backend-status.checking .status-text {
+  color: #ffa500;
+}
+
+.backend-status.online .status-text {
+  color: #10b981;
+}
+
+.backend-status.offline .status-text {
+  color: #ef4444;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

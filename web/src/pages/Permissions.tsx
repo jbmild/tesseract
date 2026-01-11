@@ -20,6 +20,14 @@ export default function Permissions() {
       setPermissions(res.data.data);
     } catch (error: any) {
       console.error('Failed to load data:', error);
+      if (error.response?.status === 403) {
+        toast.error('Access denied. Only system administrators can view permissions.');
+        // Redirect to home after a short delay
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 2000);
+        return;
+      }
       const errorMessage = error.response?.data?.error || error.message || 'connection issue';
       toast.error(`Oops! We couldn't load the permissions list. ${errorMessage === 'connection issue' ? 'Please check your internet connection and try again.' : `Error: ${errorMessage}`}`);
     } finally {
@@ -36,6 +44,10 @@ export default function Permissions() {
       toast.success(`Great! We found and synced ${permissionCount} permission${permissionCount !== 1 ? 's' : ''} from your backend routes.`);
     } catch (error: any) {
       console.error('Failed to sync permissions:', error);
+      if (error.response?.status === 403) {
+        toast.error('Access denied. Only system administrators can sync permissions.');
+        return;
+      }
       const errorMessage = error.response?.data?.error || error.message || 'something went wrong';
       if (errorMessage.includes('connection') || errorMessage.includes('network')) {
         toast.error(`We couldn't connect to the backend. Please make sure your server is running and try again.`);

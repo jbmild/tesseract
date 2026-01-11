@@ -4,7 +4,10 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { Client } from '../clients/client.entity';
 
 @Entity('orders')
 export class Order {
@@ -13,6 +16,13 @@ export class Order {
 
   @Column()
   userId: number;
+
+  @ManyToOne(() => Client, { nullable: false })
+  @JoinColumn({ name: 'clientId' })
+  client: Client;
+
+  @Column()
+  clientId: number;
 
   @Column({ default: 'pending' })
   status: string;

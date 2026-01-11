@@ -4,7 +4,10 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { Client } from '../clients/client.entity';
 
 @Entity('products')
 export class Product {
@@ -16,6 +19,13 @@ export class Product {
 
   @Column({ unique: true })
   sku: string;
+
+  @ManyToOne(() => Client, { nullable: false })
+  @JoinColumn({ name: 'clientId' })
+  client: Client;
+
+  @Column()
+  clientId: number;
 
   @Column('decimal', { precision: 10, scale: 2 })
   price: number;

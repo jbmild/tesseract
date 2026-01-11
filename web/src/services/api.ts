@@ -18,9 +18,13 @@ api.interceptors.request.use(
     }
     
     // Add selected client ID to headers for multi-tenant context
+    // Only add header if a client is selected (not empty/null)
     const selectedClientId = localStorage.getItem('selected_client');
-    if (selectedClientId) {
+    if (selectedClientId && selectedClientId.trim() !== '') {
       config.headers['X-Client-Id'] = selectedClientId;
+    } else {
+      // Explicitly remove the header if no client is selected
+      delete config.headers['X-Client-Id'];
     }
     
     return config;
@@ -162,6 +166,21 @@ export const clientsApi = {
   create: (data: { name: string }) => api.post<{ success: boolean; data: Client }>('/api/clients', data),
   update: (id: number, data: { name: string }) => api.put<{ success: boolean; data: Client }>(`/api/clients/${id}`, data),
   delete: (id: number) => api.delete<{ success: boolean; message: string }>(`/api/clients/${id}`),
+};
+
+// Health API
+export interface HealthResponse {
+  status: string;
+  timestamp: string;
+  service: string;
+}
+
+export const healthApi = {
+  check: async (): Promise<HealthResponse> => {
+    // Health endpoint doesn't require authentication, so use a direct axios call
+    const response = await axios.get<HealthResponse>(`${API_BASE_URL}/api/health`);
+    return response.data;
+  },
 };
 
 // Auth API

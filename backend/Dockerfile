@@ -11,9 +11,14 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# Copy and set up entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Development stage
 FROM base AS development
 EXPOSE 3000
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["npm", "run", "start:dev"]
 
 # Production stage

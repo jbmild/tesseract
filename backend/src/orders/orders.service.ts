@@ -10,31 +10,47 @@ export class OrdersService {
   }
 
   async findAll(clientId?: number | null): Promise<Order[]> {
-    // Note: Orders don't have direct client relationship yet
-    // This is a placeholder for future client filtering
-    // For now, return all orders (or filter by user's clients if needed)
-    return this.ordersRepository.find();
+    const findOptions: any = {};
+    if (clientId) {
+      findOptions.where = { clientId };
+    }
+    return this.ordersRepository.find(findOptions);
   }
 
-  async findOne(id: number): Promise<Order | null> {
-    return this.ordersRepository.findOne({ where: { id } });
+  async findOne(id: number, clientId?: number | null): Promise<Order | null> {
+    const findOptions: any = { where: { id } };
+    if (clientId) {
+      findOptions.where.clientId = clientId;
+    }
+    return this.ordersRepository.findOne(findOptions);
   }
 
-  async create(orderData: Partial<Order>): Promise<Order> {
-    const order = this.ordersRepository.create(orderData);
+  async create(orderData: Partial<Order>, clientId?: number | null): Promise<Order> {
+    if (!clientId) {
+      throw new Error('Client ID is required to create an order');
+    }
+    const order = this.ordersRepository.create({ ...orderData, clientId });
     return this.ordersRepository.save(order);
   }
 
-  async update(id: number, orderData: Partial<Order>): Promise<Order> {
-    await this.ordersRepository.update(id, orderData);
-    const order = await this.findOne(id);
+  async update(id: number, orderData: Partial<Order>, clientId?: number | null): Promise<Order> {
+    const updateOptions: any = { id };
+    if (clientId) {
+      updateOptions.clientId = clientId;
+    }
+    await this.ordersRepository.update(updateOptions, orderData);
+    const order = await this.findOne(id, clientId);
     if (!order) {
       throw new Error('Order not found');
     }
     return order;
   }
 
-  async remove(id: number): Promise<void> {
-    await this.ordersRepository.delete(id);
+  async remove(id: number, clientId?: number | null): Promise<void> {
+    const deleteOptions: any = { id };
+    if (clientId) {
+      deleteOptions.clientId = clientId;
+    }
+    await this.ordersRepository.delete(deleteOptions);
   }
 }

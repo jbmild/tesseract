@@ -14,7 +14,9 @@ const excludePassword = (user: User): Omit<User, 'password'> => {
 
 router.get('/', async (req: ClientContextRequest, res: Response) => {
   try {
-    const data = await usersService.findAll(req.clientId);
+    // Check if the current user is systemadmin
+    const isSystemAdmin = req.user?.roleId ? await usersService.isSystemAdmin(req.user.roleId) : false;
+    const data = await usersService.findAll(req.clientId, isSystemAdmin);
     const sanitizedData = data.map(excludePassword);
     res.json({ success: true, data: sanitizedData });
   } catch (error) {

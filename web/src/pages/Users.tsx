@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { usersApi, rolesApi, clientsApi, User, CreateUserDto, UpdateUserDto, Client } from '../services/api';
+import { useClient } from '../contexts/ClientContext';
 import ConfirmDialog from '../components/ConfirmDialog';
 import './Management.css';
 
 export default function Users() {
+  const { clientChangeKey, selectedClient } = useClient();
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
@@ -22,7 +24,7 @@ export default function Users() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [clientChangeKey]); // Reload when client changes
 
   const loadData = async () => {
     try {
@@ -46,16 +48,20 @@ export default function Users() {
 
   const handleCreate = () => {
     setEditingUser(null);
-    setFormData({ username: '', password: '', clientIds: [], roleId: null });
+    // If a client is selected, automatically assign it to the new user
+    const initialClientIds = selectedClient ? [selectedClient.id] : [];
+    setFormData({ username: '', password: '', clientIds: initialClientIds, roleId: null });
     setShowModal(true);
   };
 
   const handleEdit = (user: User) => {
     setEditingUser(user);
+    // If a client is selected, automatically assign it to the user being edited
+    const initialClientIds = selectedClient ? [selectedClient.id] : (user.clients?.map(c => c.id) || []);
     setFormData({
       username: user.username,
       password: '',
-      clientIds: user.clients?.map(c => c.id) || [],
+      clientIds: initialClientIds,
       roleId: user.roleId,
     });
     setShowModal(true);
@@ -199,28 +205,45 @@ export default function Users() {
                   required={!editingUser}
                 />
               </div>
-              <div className="form-group">
-                <label>Clients</label>
-                <select
-                  multiple
-                  size={5}
-                  value={formData.clientIds?.map(id => id.toString()) || []}
-                  onChange={(e) => {
-                    const selectedIds = Array.from(e.target.selectedOptions, option => parseInt(option.value));
-                    setFormData({ ...formData, clientIds: selectedIds });
-                  }}
-                  style={{ minHeight: '100px' }}
-                >
-                  {clients.map((client) => (
-                    <option key={client.id} value={client.id}>
-                      {client.name}
-                    </option>
-                  ))}
-                </select>
-                <small style={{ display: 'block', marginTop: '5px', color: '#666' }}>
-                  Hold Ctrl (or Cmd on Mac) to select multiple clients
-                </small>
-              </div>
+              {/* Hide clients selector when a client is selected (both create and edit) */}
+              {!selectedClient && (
+                <div className="form-group">
+                  <label>Clients</label>
+                  <select
+                    multiple
+                    size={5}
+                    value={formData.clientIds?.map(id => id.toString()) || []}
+                    onChange={(e) => {
+                      const selectedIds = Array.from(e.target.selectedOptions, option => parseInt(option.value));
+                      setFormData({ ...formData, clientIds: selectedIds });
+                    }}
+                    style={{ minHeight: '100px' }}
+                  >
+                    {clients.map((client) => (
+                      <option key={client.id} value={client.id}>
+                        {client.name}
+                      </option>
+                    ))}
+                  </select>
+                  <small style={{ display: 'block', marginTop: '5px', color: '#666' }}>
+                    Hold Ctrl (or Cmd on Mac) to select multiple clients
+                  </small>
+                </div>
+              )}
+              {/* Show info message when a client is selected (both create and edit) */}
+              {selectedClient && (
+                <div className="form-group">
+                  <div style={{ 
+                    padding: '10px', 
+                    backgroundColor: '#e3f2fd', 
+                    borderRadius: '4px', 
+                    color: '#1976d2',
+                    fontSize: '0.9rem'
+                  }}>
+                    ℹ️ This user will be automatically assigned to <strong>{selectedClient.name}</strong>
+                  </div>
+                </div>
+              )}
               <div className="form-group">
                 <label>Role</label>
                 <select

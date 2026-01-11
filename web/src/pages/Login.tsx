@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
+import BackendStatus from '../components/BackendStatus';
 import './Login.css';
 
 export default function Login() {
@@ -29,6 +30,7 @@ export default function Login() {
 
   return (
     <div className="login-container">
+      <BackendStatus />
       <div className="login-card">
         <h1>Tesseract</h1>
         <h2>Sign In</h2>

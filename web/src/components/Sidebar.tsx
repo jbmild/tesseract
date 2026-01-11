@@ -21,9 +21,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   };
 
   const handleClientChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const clientId = parseInt(e.target.value);
-    const client = availableClients.find(c => c.id === clientId);
-    setSelectedClient(client || null);
+    const value = e.target.value;
+    if (!value || value === '') {
+      setSelectedClient(null);
+    } else {
+      const clientId = parseInt(value);
+      const client = availableClients.find(c => c.id === clientId);
+      setSelectedClient(client || null);
+    }
   };
 
   const handleLinkClick = () => {
@@ -62,7 +67,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 value={selectedClient?.id || ''}
                 onChange={handleClientChange}
               >
-                <option value="">Select Client</option>
+                {user?.role?.name?.toLowerCase() === 'systemadmin' && (
+                  <option value="">All</option>
+                )}
                 {availableClients.map((client) => (
                   <option key={client.id} value={client.id}>
                     {client.name}
@@ -97,14 +104,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               <span className="nav-icon">👥</span>
               <span className="nav-text">Users</span>
             </Link>
-            <Link
-              to="/clients"
-              className={`nav-item ${location.pathname === '/clients' ? 'active' : ''}`}
-              onClick={handleLinkClick}
-            >
-              <span className="nav-icon">🏢</span>
-              <span className="nav-text">Clients</span>
-            </Link>
+            {user?.role?.name?.toLowerCase() === 'systemadmin' && (
+              <Link
+                to="/clients"
+                className={`nav-item ${location.pathname === '/clients' ? 'active' : ''}`}
+                onClick={handleLinkClick}
+              >
+                <span className="nav-icon">🏢</span>
+                <span className="nav-text">Clients</span>
+              </Link>
+            )}
             <Link
               to="/roles"
               className={`nav-item ${location.pathname === '/roles' ? 'active' : ''}`}
@@ -113,14 +122,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               <span className="nav-icon">🔐</span>
               <span className="nav-text">Roles</span>
             </Link>
-            <Link
-              to="/permissions"
-              className={`nav-item ${location.pathname === '/permissions' ? 'active' : ''}`}
-              onClick={handleLinkClick}
-            >
-              <span className="nav-icon">🔑</span>
-              <span className="nav-text">Permissions</span>
-            </Link>
+            {user?.role?.name?.toLowerCase() === 'systemadmin' && (
+              <Link
+                to="/permissions"
+                className={`nav-item ${location.pathname === '/permissions' ? 'active' : ''}`}
+                onClick={handleLinkClick}
+              >
+                <span className="nav-icon">🔑</span>
+                <span className="nav-text">Permissions</span>
+              </Link>
+            )}
           </nav>
         </div>
       </aside>

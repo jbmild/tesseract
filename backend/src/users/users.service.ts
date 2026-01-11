@@ -10,16 +10,36 @@ export class UsersService {
     this.usersRepository = AppDataSource.getRepository(User);
   }
 
-  async findAll(clientId?: number | null): Promise<User[]> {
+  async isSystemAdmin(roleId: number): Promise<boolean> {
+    const { Role } = await import('../roles/role.entity');
+    const roleRepository = AppDataSource.getRepository(Role);
+    const role = await roleRepository.findOne({ where: { id: roleId } });
+    return role?.name.toLowerCase() === 'systemadmin';
+  }
+
+  async findAll(clientId?: number | null, isSystemAdmin: boolean = false): Promise<User[]> {
     const queryBuilder = this.usersRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.role', 'role')
       .leftJoinAndSelect('role.permissions', 'permissions')
       .leftJoinAndSelect('user.clients', 'clients');
 
-    // If clientId is provided, filter users by client assignment
-    if (clientId) {
-      queryBuilder.where('clients.id = :clientId', { clientId });
+    if (isSystemAdmin) {
+      // If systemadmin has no client selected, show all users with no clients assigned
+      if (!clientId) {
+        // Get users that have no clients assigned using NOT EXISTS
+        queryBuilder.where(
+          'NOT EXISTS (SELECT 1 FROM user_clients uc WHERE uc.userId = user.id)'
+        );
+      } else {
+        // If systemadmin has a client selected, show users assigned to that client
+        queryBuilder.where('clients.id = :clientId', { clientId });
+      }
+    } else {
+      // For non-systemadmin users, filter by client assignment
+      if (clientId) {
+        queryBuilder.where('clients.id = :clientId', { clientId });
+      }
     }
 
     return queryBuilder.getMany();

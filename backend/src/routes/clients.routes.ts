@@ -1,8 +1,12 @@
 import { Router, Request, Response } from 'express';
 import { ClientsService } from '../clients/clients.service';
+import { requireSystemAdmin } from '../middleware/require-systemadmin.middleware';
 
 const router = Router();
 const clientsService = new ClientsService();
+
+// All clients routes require systemadmin role
+router.use(requireSystemAdmin);
 
 router.get('/', async (req: Request, res: Response) => {
   try {

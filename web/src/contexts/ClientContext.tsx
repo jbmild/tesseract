@@ -14,6 +14,7 @@ interface ClientContextType {
   availableClients: Client[];
   setSelectedClient: (client: Client | null) => void;
   isLoading: boolean;
+  clientChangeKey: number; // Increments when client changes, used to trigger refreshes
 }
 
 const ClientContext = createContext<ClientContextType | undefined>(undefined);
@@ -25,6 +26,7 @@ export function ClientProvider({ children }: { children: ReactNode }) {
   const [selectedClient, setSelectedClientState] = useState<Client | null>(null);
   const [availableClients, setAvailableClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [clientChangeKey, setClientChangeKey] = useState(0);
 
   // Load available clients and selected client
   useEffect(() => {
@@ -81,6 +83,8 @@ export function ClientProvider({ children }: { children: ReactNode }) {
     } else {
       localStorage.removeItem(SELECTED_CLIENT_KEY);
     }
+    // Increment change key to trigger refreshes in pages
+    setClientChangeKey(prev => prev + 1);
   };
 
   const value: ClientContextType = {
@@ -88,6 +92,7 @@ export function ClientProvider({ children }: { children: ReactNode }) {
     availableClients,
     setSelectedClient,
     isLoading,
+    clientChangeKey,
   };
 
   return <ClientContext.Provider value={value}>{children}</ClientContext.Provider>;

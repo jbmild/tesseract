@@ -1,9 +1,13 @@
 import { Router, Request, Response } from 'express';
 import { PermissionsService } from '../permissions/permissions.service';
 import { Express } from 'express';
+import { requireSystemAdmin } from '../middleware/require-systemadmin.middleware';
 
 const router = Router();
 const permissionsService = new PermissionsService();
+
+// All permissions routes require systemadmin role
+router.use(requireSystemAdmin);
 
 // Store app reference for route scanning
 let appInstance: Express | null = null;

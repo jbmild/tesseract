@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import SystemAdminRoute from './components/SystemAdminRoute';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import Users from './pages/Users';
@@ -23,9 +24,23 @@ function App() {
       >
         <Route index element={<Home />} />
         <Route path="users" element={<Users />} />
-        <Route path="clients" element={<Clients />} />
+        <Route
+          path="clients"
+          element={
+            <SystemAdminRoute>
+              <Clients />
+            </SystemAdminRoute>
+          }
+        />
         <Route path="roles" element={<Roles />} />
-        <Route path="permissions" element={<Permissions />} />
+        <Route
+          path="permissions"
+          element={
+            <SystemAdminRoute>
+              <Permissions />
+            </SystemAdminRoute>
+          }
+        />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

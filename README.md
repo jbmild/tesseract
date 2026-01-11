@@ -22,7 +22,15 @@ This is a monorepo containing:
 2. Copy `.env.example` to `.env` and adjust if needed
 3. Run the entire stack:
    ```bash
-   docker-compose up -d
+   # Use either command (both work):
+   docker compose up -d    # Docker Compose v2 (recommended)
+   # or
+   docker-compose up -d    # Legacy v1 syntax (alias available)
+   ```
+
+**Note for WSL users**: If `docker-compose` is not found, use `docker compose` (with a space) or reload your shell after the alias is added:
+   ```bash
+   source ~/.bashrc
    ```
 
 This will start:
@@ -93,20 +101,22 @@ npm run build:desktop
 
 ```bash
 # Start all services
-docker-compose up -d
+docker compose up -d    # or: docker-compose up -d
 
 # Stop all services
-docker-compose down
+docker compose down     # or: docker-compose down
 
 # View logs
-docker-compose logs -f
+docker compose logs -f  # or: docker-compose logs -f
 
 # Rebuild containers
-docker-compose up -d --build
+docker compose up -d --build  # or: docker-compose up -d --build
 
 # Stop and remove volumes (clears database)
-docker-compose down -v
+docker compose down -v  # or: docker-compose down -v
 ```
+
+**Note**: Docker Compose v2 uses `docker compose` (space). The legacy `docker-compose` (hyphen) command is available as an alias if needed.
 
 ## API Endpoints
 

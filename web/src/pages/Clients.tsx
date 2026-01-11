@@ -24,6 +24,14 @@ export default function Clients() {
       setClients(res.data.data);
     } catch (error: any) {
       console.error('Failed to load data:', error);
+      if (error.response?.status === 403) {
+        toast.error('Access denied. Only system administrators can view clients.');
+        // Redirect to home after a short delay
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 2000);
+        return;
+      }
       const errorMessage = error.response?.data?.error || error.message || 'connection issue';
       toast.error(`Oops! We couldn't load the clients list. ${errorMessage === 'connection issue' ? 'Please check your internet connection and try again.' : `Error: ${errorMessage}`}`);
     } finally {
@@ -57,11 +65,15 @@ export default function Clients() {
       await loadData();
     } catch (error: any) {
       console.error('Failed to delete client:', error);
-      const errorMessage = error.response?.data?.error || error.message || 'something went wrong';
-      if (errorMessage.includes('permission') || errorMessage.includes('unauthorized')) {
-        toast.error(`Sorry, you don't have permission to delete clients. Please contact your administrator.`);
+      if (error.response?.status === 403) {
+        toast.error('Access denied. Only system administrators can delete clients.');
       } else {
-        toast.error(`We couldn't delete this client. ${errorMessage === 'something went wrong' ? 'They might have users assigned. Please check and try again.' : errorMessage}`);
+        const errorMessage = error.response?.data?.error || error.message || 'something went wrong';
+        if (errorMessage.includes('permission') || errorMessage.includes('unauthorized')) {
+          toast.error(`Sorry, you don't have permission to delete clients. Please contact your administrator.`);
+        } else {
+          toast.error(`We couldn't delete this client. ${errorMessage === 'something went wrong' ? 'They might have users assigned. Please check and try again.' : errorMessage}`);
+        }
       }
     } finally {
       setShowConfirmDialog(false);
@@ -86,6 +98,11 @@ export default function Clients() {
       await loadData();
     } catch (error: any) {
       console.error('Failed to save client:', error);
+      if (error.response?.status === 403) {
+        toast.error('Access denied. Only system administrators can manage clients.');
+        setShowModal(false);
+        return;
+      }
       const errorMessage = error.response?.data?.error || error.message || 'something went wrong';
       const action = editingClient ? 'update' : 'create';
       

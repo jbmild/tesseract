@@ -1,25 +1,26 @@
 import { Router, Request, Response } from 'express';
 import { RolesService } from '../roles/roles.service';
+import { ClientContextRequest } from '../middleware/client-context.middleware';
 
 const router = Router();
 const rolesService = new RolesService();
 
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (req: ClientContextRequest, res: Response) => {
   try {
-    const data = await rolesService.findAll();
+    const data = await rolesService.findAll(req.clientId);
     res.json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, error: (error as Error).message });
   }
 });
 
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', async (req: ClientContextRequest, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
       return res.status(400).json({ success: false, error: 'Invalid ID' });
     }
-    const data = await rolesService.findOne(id);
+    const data = await rolesService.findOne(id, req.clientId);
     if (!data) {
       return res.status(404).json({ success: false, error: 'Role not found' });
     }
@@ -29,22 +30,23 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', async (req: ClientContextRequest, res: Response) => {
   try {
-    const data = await rolesService.create(req.body);
+    // clientId is optional for roles - can be null for global roles
+    const data = await rolesService.create(req.body, req.clientId);
     res.status(201).json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, error: (error as Error).message });
   }
 });
 
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', async (req: ClientContextRequest, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
       return res.status(400).json({ success: false, error: 'Invalid ID' });
     }
-    const data = await rolesService.update(id, req.body);
+    const data = await rolesService.update(id, req.body, req.clientId);
     res.json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, error: (error as Error).message });

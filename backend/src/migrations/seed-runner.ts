@@ -49,15 +49,23 @@ export async function runSeedMigration(): Promise<void> {
       .getOne();
 
     if (!systemAdminRole) {
-      // Create systemadmin role with all permissions
+      // Create systemadmin role with all permissions (clientId = null for global role)
       systemAdminRole = roleRepository.create({
         name: 'systemadmin',
         description: 'System Administrator role with full access to all features',
         permissions: allPermissions,
+        clientId: null, // Global role, not client-specific
       });
       systemAdminRole = await roleRepository.save(systemAdminRole);
       console.log(`✅ Created systemadmin role with ${allPermissions.length} permissions`);
     } else {
+      // Ensure systemadmin role is global (clientId = null)
+      if (systemAdminRole.clientId !== null) {
+        systemAdminRole.clientId = null;
+        await roleRepository.save(systemAdminRole);
+        console.log('✅ Updated systemadmin role to be global (clientId = null)');
+      }
+
       // Always update systemadmin role to have all permissions (in case new permissions were added)
       const currentPermissionIds = systemAdminRole.permissions?.map(p => p.id).sort() || [];
       const allPermissionIds = allPermissions.map(p => p.id).sort();
