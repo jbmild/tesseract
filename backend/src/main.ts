@@ -5,8 +5,6 @@ import { initializeDatabase } from './database/database';
 import healthRoutes from './routes/health.routes';
 import authRoutes from './routes/auth.routes';
 import usersRoutes from './routes/users.routes';
-import ordersRoutes from './routes/orders.routes';
-import productsRoutes from './routes/products.routes';
 import rolesRoutes from './routes/roles.routes';
 import permissionsRoutes, { setAppInstance } from './routes/permissions.routes';
 import clientsRoutes from './routes/clients.routes';
@@ -44,8 +42,6 @@ app.use('/api/auth', authRoutes);
 
 // Protected routes (require authentication and client context)
 app.use('/api/users', authenticateToken, clientContextMiddleware, usersRoutes);
-app.use('/api/orders', authenticateToken, clientContextMiddleware, ordersRoutes);
-app.use('/api/products', authenticateToken, clientContextMiddleware, productsRoutes);
 app.use('/api/roles', authenticateToken, clientContextMiddleware, rolesRoutes);
 app.use('/api/permissions', authenticateToken, clientContextMiddleware, permissionsRoutes);
 app.use('/api/clients', authenticateToken, clientContextMiddleware, clientsRoutes);

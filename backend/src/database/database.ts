@@ -1,8 +1,6 @@
 import { DataSource } from 'typeorm';
 import { getDatabaseConfig } from '../config/database.config';
 import { User } from '../users/user.entity';
-import { Order } from '../orders/order.entity';
-import { Product } from '../products/product.entity';
 import { Role } from '../roles/role.entity';
 import { Permission } from '../permissions/permission.entity';
 import { Client } from '../clients/client.entity';
@@ -10,7 +8,7 @@ import { Migration } from '../migrations/migration.entity';
 
 export const AppDataSource = new DataSource({
   ...getDatabaseConfig(),
-  entities: [User, Order, Product, Role, Permission, Client, Migration],
+  entities: [User, Role, Permission, Client, Migration],
 });
 
 export const initializeDatabase = async (): Promise<void> => {

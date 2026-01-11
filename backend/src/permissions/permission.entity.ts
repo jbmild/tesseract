@@ -17,7 +17,7 @@ export class Permission {
   name: string;
 
   @Column()
-  resource: string; // e.g., 'users', 'orders', 'products'
+  resource: string; // e.g., 'users', 'roles', 'clients', 'permissions'
 
   @Column({ type: 'text', nullable: true })
   description: string | null;

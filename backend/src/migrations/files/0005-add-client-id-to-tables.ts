@@ -2,10 +2,9 @@ import { AppDataSource } from '../../database/database';
 import { QueryRunner, TableColumn, TableForeignKey } from 'typeorm';
 
 /**
- * Migration to add clientId column to orders, products, and roles tables
- * - orders: clientId is required (NOT NULL)
- * - products: clientId is required (NOT NULL)
+ * Migration to add clientId column to roles table
  * - roles: clientId is optional (NULL) for global roles like systemadmin
+ * Note: This migration also handles orders and products tables if they exist (for backward compatibility)
  */
 export default {
   name: '0005-add-client-id-to-tables',

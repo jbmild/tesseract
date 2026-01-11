@@ -115,20 +115,6 @@ export function getRoutesFromApp(app: Express): RouteInfo[] {
     { method: 'PUT', path: '/api/permissions/:id', resource: 'permissions', action: 'permissions_update' },
     { method: 'DELETE', path: '/api/permissions/:id', resource: 'permissions', action: 'permissions_delete' },
     
-    // Orders
-    { method: 'GET', path: '/api/orders', resource: 'orders', action: 'orders_list' },
-    { method: 'GET', path: '/api/orders/:id', resource: 'orders', action: 'orders_read' },
-    { method: 'POST', path: '/api/orders', resource: 'orders', action: 'orders_create' },
-    { method: 'PUT', path: '/api/orders/:id', resource: 'orders', action: 'orders_update' },
-    { method: 'DELETE', path: '/api/orders/:id', resource: 'orders', action: 'orders_delete' },
-    
-    // Products
-    { method: 'GET', path: '/api/products', resource: 'products', action: 'products_list' },
-    { method: 'GET', path: '/api/products/:id', resource: 'products', action: 'products_read' },
-    { method: 'POST', path: '/api/products', resource: 'products', action: 'products_create' },
-    { method: 'PUT', path: '/api/products/:id', resource: 'products', action: 'products_update' },
-    { method: 'DELETE', path: '/api/products/:id', resource: 'products', action: 'products_delete' },
-    
     // Clients
     { method: 'GET', path: '/api/clients', resource: 'clients', action: 'clients_list' },
     { method: 'GET', path: '/api/clients/:id', resource: 'clients', action: 'clients_read' },

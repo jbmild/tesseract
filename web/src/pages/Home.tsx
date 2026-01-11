@@ -70,12 +70,8 @@ export default function Home() {
           <p>Manage users, roles, and permissions</p>
         </div>
         <div className="feature-card">
-          <h3>📦 Orders</h3>
-          <p>Manage warehouse orders</p>
-        </div>
-        <div className="feature-card">
-          <h3>📋 Products</h3>
-          <p>Track inventory and products</p>
+          <h3>🏢 Clients</h3>
+          <p>Manage multi-tenant clients</p>
         </div>
       </div>
     </div>
