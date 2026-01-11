@@ -86,53 +86,70 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         {/* Navigation Section */}
         <div className="sidebar-section navigation-section">
-          <h3 className="section-title">Navigation</h3>
-          <nav className="sidebar-nav">
-            <Link
-              to="/"
-              className={`nav-item ${location.pathname === '/' ? 'active' : ''}`}
-              onClick={handleLinkClick}
-            >
-              <span className="nav-icon">🏠</span>
-              <span className="nav-text">Home</span>
-            </Link>
-            <Link
-              to="/users"
-              className={`nav-item ${location.pathname === '/users' ? 'active' : ''}`}
-              onClick={handleLinkClick}
-            >
-              <span className="nav-icon">👥</span>
-              <span className="nav-text">Users</span>
-            </Link>
-            {user?.role?.name?.toLowerCase() === 'systemadmin' && (
+          {/* General Section */}
+          <div className="nav-group">
+            <h3 className="nav-group-title">General</h3>
+            <nav className="sidebar-nav">
               <Link
-                to="/clients"
-                className={`nav-item ${location.pathname === '/clients' ? 'active' : ''}`}
+                to="/"
+                className={`nav-item ${location.pathname === '/' ? 'active' : ''}`}
                 onClick={handleLinkClick}
               >
-                <span className="nav-icon">🏢</span>
-                <span className="nav-text">Clients</span>
+                <span className="nav-icon">🏠</span>
+                <span className="nav-text">Home</span>
               </Link>
-            )}
-            <Link
-              to="/roles"
-              className={`nav-item ${location.pathname === '/roles' ? 'active' : ''}`}
-              onClick={handleLinkClick}
-            >
-              <span className="nav-icon">🔐</span>
-              <span className="nav-text">Roles</span>
-            </Link>
-            {user?.role?.name?.toLowerCase() === 'systemadmin' && (
+            </nav>
+          </div>
+
+          {/* User Management Section */}
+          <div className="nav-group">
+            <h3 className="nav-group-title">User Management</h3>
+            <nav className="sidebar-nav">
               <Link
-                to="/permissions"
-                className={`nav-item ${location.pathname === '/permissions' ? 'active' : ''}`}
+                to="/users"
+                className={`nav-item ${location.pathname === '/users' ? 'active' : ''}`}
                 onClick={handleLinkClick}
               >
-                <span className="nav-icon">🔑</span>
-                <span className="nav-text">Permissions</span>
+                <span className="nav-icon">👥</span>
+                <span className="nav-text">Users</span>
               </Link>
-            )}
-          </nav>
+              <Link
+                to="/roles"
+                className={`nav-item ${location.pathname === '/roles' ? 'active' : ''}`}
+                onClick={handleLinkClick}
+              >
+                <span className="nav-icon">🔐</span>
+                <span className="nav-text">Roles</span>
+              </Link>
+              {user?.role?.name?.toLowerCase() === 'systemadmin' && (
+                <Link
+                  to="/permissions"
+                  className={`nav-item ${location.pathname === '/permissions' ? 'active' : ''}`}
+                  onClick={handleLinkClick}
+                >
+                  <span className="nav-icon">🔑</span>
+                  <span className="nav-text">Permissions</span>
+                </Link>
+              )}
+            </nav>
+          </div>
+
+          {/* System Administration Section (SystemAdmin only) */}
+          {user?.role?.name?.toLowerCase() === 'systemadmin' && (
+            <div className="nav-group">
+              <h3 className="nav-group-title">System Administration</h3>
+              <nav className="sidebar-nav">
+                <Link
+                  to="/clients"
+                  className={`nav-item ${location.pathname === '/clients' ? 'active' : ''}`}
+                  onClick={handleLinkClick}
+                >
+                  <span className="nav-icon">🏢</span>
+                  <span className="nav-text">Clients</span>
+                </Link>
+              </nav>
+            </div>
+          )}
         </div>
       </aside>
     </>
