@@ -19,6 +19,23 @@ export default function Locations() {
     loadData();
   }, [clientChangeKey]);
 
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && showModal) {
+        setShowModal(false);
+      }
+    };
+
+    if (showModal) {
+      document.addEventListener('keydown', handleEsc);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEsc);
+    };
+  }, [showModal]);
+
   const loadData = async () => {
     try {
       setLoading(true);

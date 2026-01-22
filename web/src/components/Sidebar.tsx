@@ -173,6 +173,21 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               </Link>
             </nav>
           </div>
+
+          {/* Products Section */}
+          <div className="nav-group">
+            <h3 className="nav-group-title">Products</h3>
+            <nav className="sidebar-nav">
+              <Link
+                to="/products"
+                className={`nav-item ${location.pathname === '/products' ? 'active' : ''}`}
+                onClick={handleLinkClick}
+              >
+                <span className="nav-icon">📦</span>
+                <span className="nav-text">Products</span>
+              </Link>
+            </nav>
+          </div>
         </div>
       </aside>
     </>

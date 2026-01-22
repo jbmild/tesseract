@@ -139,6 +139,22 @@ export interface Warehouse {
   updatedAt: string;
 }
 
+export interface Product {
+  id: number;
+  sku: string;
+  code: string;
+  barcode?: string | null;
+  name: string;
+  description?: string | null;
+  width?: number | null;
+  height?: number | null;
+  depth?: number | null;
+  clientId: number;
+  client?: Client;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface CreateUserDto {
   username: string;
   password: string;
@@ -294,6 +310,37 @@ export const exclusionsApi = {
   create: (data: CreateExclusionDto) => api.post<{ success: boolean; data: WarehouseExclusion }>('/api/exclusions', data),
   update: (id: number, data: UpdateExclusionDto & { warehouseId: number }) => api.put<{ success: boolean; data: WarehouseExclusion }>(`/api/exclusions/${id}`, data),
   delete: (id: number, warehouseId: number) => api.delete<{ success: boolean; message: string }>(`/api/exclusions/${id}?warehouseId=${warehouseId}`),
+};
+
+// Products API
+export interface CreateProductDto {
+  sku: string;
+  code: string;
+  barcode?: string | null;
+  name: string;
+  description?: string | null;
+  width?: number | null;
+  height?: number | null;
+  depth?: number | null;
+}
+
+export interface UpdateProductDto {
+  sku?: string;
+  code?: string;
+  barcode?: string | null;
+  name?: string;
+  description?: string | null;
+  width?: number | null;
+  height?: number | null;
+  depth?: number | null;
+}
+
+export const productsApi = {
+  getAll: () => api.get<{ success: boolean; data: Product[] }>('/api/products'),
+  getById: (id: number) => api.get<{ success: boolean; data: Product }>(`/api/products/${id}`),
+  create: (data: CreateProductDto) => api.post<{ success: boolean; data: Product }>('/api/products', data),
+  update: (id: number, data: UpdateProductDto) => api.put<{ success: boolean; data: Product }>(`/api/products/${id}`, data),
+  delete: (id: number) => api.delete<{ success: boolean; message: string }>(`/api/products/${id}`),
 };
 
 // Health API

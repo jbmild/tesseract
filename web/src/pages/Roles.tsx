@@ -106,6 +106,27 @@ export default function Roles() {
     loadData();
   }, [clientChangeKey]); // Reload when client changes
 
+  // Handle ESC key to close modals
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (showPermissionsModal) {
+          setShowPermissionsModal(false);
+        } else if (showModal) {
+          setShowModal(false);
+        }
+      }
+    };
+
+    if (showModal || showPermissionsModal) {
+      document.addEventListener('keydown', handleEsc);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEsc);
+    };
+  }, [showModal, showPermissionsModal]);
+
   const loadData = async () => {
     try {
       setLoading(true);

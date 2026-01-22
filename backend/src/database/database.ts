@@ -7,11 +7,12 @@ import { Client } from '../clients/client.entity';
 import { Location } from '../locations/location.entity';
 import { Warehouse } from '../warehouses/warehouse.entity';
 import { WarehouseExclusion } from '../warehouses/warehouse-exclusion.entity';
+import { Product } from '../products/product.entity';
 import { Migration } from '../migrations/migration.entity';
 
 export const AppDataSource = new DataSource({
   ...getDatabaseConfig(),
-  entities: [User, Role, Permission, Client, Location, Warehouse, WarehouseExclusion, Migration],
+  entities: [User, Role, Permission, Client, Location, Warehouse, WarehouseExclusion, Product, Migration],
 });
 
 export const initializeDatabase = async (): Promise<void> => {

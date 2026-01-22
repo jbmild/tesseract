@@ -51,6 +51,29 @@ export default function Warehouses() {
     loadData();
   }, [clientChangeKey]);
 
+  // Handle ESC key to close modals
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (showExclusionModal) {
+          setShowExclusionModal(false);
+        } else if (showModal) {
+          setShowModal(false);
+          setExclusions([]);
+          setEditingWarehouse(null);
+        }
+      }
+    };
+
+    if (showModal || showExclusionModal) {
+      document.addEventListener('keydown', handleEsc);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEsc);
+    };
+  }, [showModal, showExclusionModal]);
+
   const loadData = async () => {
     try {
       setLoading(true);
