@@ -150,6 +150,21 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               </nav>
             </div>
           )}
+
+          {/* Locations Section */}
+          <div className="nav-group">
+            <h3 className="nav-group-title">Locations</h3>
+            <nav className="sidebar-nav">
+              <Link
+                to="/locations"
+                className={`nav-item ${location.pathname === '/locations' ? 'active' : ''}`}
+                onClick={handleLinkClick}
+              >
+                <span className="nav-icon">📍</span>
+                <span className="nav-text">Locations</span>
+              </Link>
+            </nav>
+          </div>
         </div>
       </aside>
     </>

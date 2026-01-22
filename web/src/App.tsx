@@ -8,6 +8,7 @@ import Users from './pages/Users';
 import Clients from './pages/Clients';
 import Roles from './pages/Roles';
 import Permissions from './pages/Permissions';
+import Locations from './pages/Locations';
 import './App.css';
 
 function App() {
@@ -41,6 +42,7 @@ function App() {
             </SystemAdminRoute>
           }
         />
+        <Route path="locations" element={<Locations />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

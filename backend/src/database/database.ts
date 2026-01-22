@@ -4,11 +4,12 @@ import { User } from '../users/user.entity';
 import { Role } from '../roles/role.entity';
 import { Permission } from '../permissions/permission.entity';
 import { Client } from '../clients/client.entity';
+import { Location } from '../locations/location.entity';
 import { Migration } from '../migrations/migration.entity';
 
 export const AppDataSource = new DataSource({
   ...getDatabaseConfig(),
-  entities: [User, Role, Permission, Client, Migration],
+  entities: [User, Role, Permission, Client, Location, Migration],
 });
 
 export const initializeDatabase = async (): Promise<void> => {

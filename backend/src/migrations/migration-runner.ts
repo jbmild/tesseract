@@ -16,6 +16,7 @@ import seedInitialData from './files/0003-seed-initial-data';
 import userClientsManyToMany from './files/0004-user-clients-many-to-many';
 import addClientIdToTables from './files/0005-add-client-id-to-tables';
 import roleNameClientIdUnique from './files/0006-role-name-clientid-unique';
+import createLocationsTable from './files/0007-create-locations-table';
 
 const MIGRATION_REGISTRY: { [key: string]: { up: () => Promise<void>; down?: () => Promise<void> } } = {
   '0001-initial-setup': initialSetup,
@@ -24,6 +25,7 @@ const MIGRATION_REGISTRY: { [key: string]: { up: () => Promise<void>; down?: () 
   '0004-user-clients-many-to-many': userClientsManyToMany,
   '0005-add-client-id-to-tables': addClientIdToTables,
   '0006-role-name-clientid-unique': roleNameClientIdUnique,
+  '0007-create-locations-table': createLocationsTable,
   // Add more migrations here as you create them
 };
 

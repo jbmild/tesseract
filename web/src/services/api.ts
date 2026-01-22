@@ -90,6 +90,15 @@ export interface Client {
   updatedAt: string;
 }
 
+export interface Location {
+  id: number;
+  name: string;
+  clientId: number;
+  client?: Client;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface CreateUserDto {
   username: string;
   password: string;
@@ -169,6 +178,15 @@ export const clientsApi = {
   create: (data: { name: string }) => api.post<{ success: boolean; data: Client }>('/api/clients', data),
   update: (id: number, data: { name: string }) => api.put<{ success: boolean; data: Client }>(`/api/clients/${id}`, data),
   delete: (id: number) => api.delete<{ success: boolean; message: string }>(`/api/clients/${id}`),
+};
+
+// Locations API
+export const locationsApi = {
+  getAll: () => api.get<{ success: boolean; data: Location[] }>('/api/locations'),
+  getById: (id: number) => api.get<{ success: boolean; data: Location }>(`/api/locations/${id}`),
+  create: (data: { name: string }) => api.post<{ success: boolean; data: Location }>('/api/locations', data),
+  update: (id: number, data: { name: string }) => api.put<{ success: boolean; data: Location }>(`/api/locations/${id}`, data),
+  delete: (id: number) => api.delete<{ success: boolean; message: string }>(`/api/locations/${id}`),
 };
 
 // Health API

@@ -121,6 +121,13 @@ export function getRoutesFromApp(app: Express): RouteInfo[] {
     { method: 'POST', path: '/api/clients', resource: 'clients', action: 'clients_create' },
     { method: 'PUT', path: '/api/clients/:id', resource: 'clients', action: 'clients_update' },
     { method: 'DELETE', path: '/api/clients/:id', resource: 'clients', action: 'clients_delete' },
+    
+    // Locations
+    { method: 'GET', path: '/api/locations', resource: 'locations', action: 'locations_list' },
+    { method: 'GET', path: '/api/locations/:id', resource: 'locations', action: 'locations_read' },
+    { method: 'POST', path: '/api/locations', resource: 'locations', action: 'locations_create' },
+    { method: 'PUT', path: '/api/locations/:id', resource: 'locations', action: 'locations_update' },
+    { method: 'DELETE', path: '/api/locations/:id', resource: 'locations', action: 'locations_delete' },
   ];
 
   return routeDefinitions.map(route => ({
