@@ -163,6 +163,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 <span className="nav-icon">📍</span>
                 <span className="nav-text">Locations</span>
               </Link>
+              <Link
+                to="/warehouses"
+                className={`nav-item ${location.pathname === '/warehouses' ? 'active' : ''}`}
+                onClick={handleLinkClick}
+              >
+                <span className="nav-icon">🏭</span>
+                <span className="nav-text">Warehouses</span>
+              </Link>
             </nav>
           </div>
         </div>

@@ -99,6 +99,15 @@ export interface Location {
   updatedAt: string;
 }
 
+export interface Warehouse {
+  id: number;
+  name: string;
+  locationId: number;
+  location?: Location;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface CreateUserDto {
   username: string;
   password: string;
@@ -187,6 +196,15 @@ export const locationsApi = {
   create: (data: { name: string }) => api.post<{ success: boolean; data: Location }>('/api/locations', data),
   update: (id: number, data: { name: string }) => api.put<{ success: boolean; data: Location }>(`/api/locations/${id}`, data),
   delete: (id: number) => api.delete<{ success: boolean; message: string }>(`/api/locations/${id}`),
+};
+
+// Warehouses API
+export const warehousesApi = {
+  getAll: () => api.get<{ success: boolean; data: Warehouse[] }>('/api/warehouses'),
+  getById: (id: number) => api.get<{ success: boolean; data: Warehouse }>(`/api/warehouses/${id}`),
+  create: (data: { name: string; locationId: number }) => api.post<{ success: boolean; data: Warehouse }>('/api/warehouses', data),
+  update: (id: number, data: { name?: string; locationId?: number }) => api.put<{ success: boolean; data: Warehouse }>(`/api/warehouses/${id}`, data),
+  delete: (id: number) => api.delete<{ success: boolean; message: string }>(`/api/warehouses/${id}`),
 };
 
 // Health API

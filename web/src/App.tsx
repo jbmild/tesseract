@@ -9,6 +9,7 @@ import Clients from './pages/Clients';
 import Roles from './pages/Roles';
 import Permissions from './pages/Permissions';
 import Locations from './pages/Locations';
+import Warehouses from './pages/Warehouses';
 import './App.css';
 
 function App() {
@@ -43,6 +44,7 @@ function App() {
           }
         />
         <Route path="locations" element={<Locations />} />
+        <Route path="warehouses" element={<Warehouses />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

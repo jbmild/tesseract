@@ -9,6 +9,7 @@ import rolesRoutes from './routes/roles.routes';
 import permissionsRoutes, { setAppInstance } from './routes/permissions.routes';
 import clientsRoutes from './routes/clients.routes';
 import locationsRoutes from './routes/locations.routes';
+import warehousesRoutes from './routes/warehouses.routes';
 import { PermissionsService } from './permissions/permissions.service';
 import { authenticateToken } from './auth/auth.middleware';
 import { clientContextMiddleware } from './middleware/client-context.middleware';
@@ -47,6 +48,7 @@ app.use('/api/roles', authenticateToken, clientContextMiddleware, rolesRoutes);
 app.use('/api/permissions', authenticateToken, clientContextMiddleware, permissionsRoutes);
 app.use('/api/clients', authenticateToken, clientContextMiddleware, clientsRoutes);
 app.use('/api/locations', authenticateToken, clientContextMiddleware, locationsRoutes);
+app.use('/api/warehouses', authenticateToken, clientContextMiddleware, warehousesRoutes);
 
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
