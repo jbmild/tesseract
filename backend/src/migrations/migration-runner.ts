@@ -18,6 +18,8 @@ import addClientIdToTables from './files/0005-add-client-id-to-tables';
 import roleNameClientIdUnique from './files/0006-role-name-clientid-unique';
 import createLocationsTable from './files/0007-create-locations-table';
 import addWarehouseStorageFields from './files/0008-add-warehouse-storage-fields';
+import createWarehouseExclusionsTable from './files/0009-create-warehouse-exclusions-table';
+import updateExclusionsToRanges from './files/0010-update-exclusions-to-ranges';
 
 const MIGRATION_REGISTRY: { [key: string]: { up: () => Promise<void>; down?: () => Promise<void> } } = {
   '0001-initial-setup': initialSetup,
@@ -28,6 +30,8 @@ const MIGRATION_REGISTRY: { [key: string]: { up: () => Promise<void>; down?: () 
   '0006-role-name-clientid-unique': roleNameClientIdUnique,
   '0007-create-locations-table': createLocationsTable,
   '0008-add-warehouse-storage-fields': addWarehouseStorageFields,
+  '0009-create-warehouse-exclusions-table': createWarehouseExclusionsTable,
+  '0010-update-exclusions-to-ranges': updateExclusionsToRanges,
   // Add more migrations here as you create them
 };
 

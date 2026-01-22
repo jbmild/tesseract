@@ -3,11 +3,13 @@ import {
   Column,
   PrimaryGeneratedColumn,
   ManyToOne,
+  OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
   JoinColumn,
 } from 'typeorm';
 import { Location } from '../locations/location.entity';
+import { WarehouseExclusion } from './warehouse-exclusion.entity';
 
 @Entity('warehouses')
 export class Warehouse {
@@ -51,6 +53,9 @@ export class Warehouse {
 
   @Column({ type: 'int', nullable: true })
   binCount: number | null;
+
+  @OneToMany(() => WarehouseExclusion, (exclusion) => exclusion.warehouse, { cascade: true })
+  exclusions: WarehouseExclusion[];
 
   @CreateDateColumn()
   createdAt: Date;

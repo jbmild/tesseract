@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { warehousesApi, locationsApi, Warehouse, Location, CreateWarehouseDto } from '../services/api';
+import { warehousesApi, locationsApi, exclusionsApi, Warehouse, Location, WarehouseExclusion, CreateWarehouseDto, CreateExclusionDto, ExclusionPossibleValues } from '../services/api';
 import { useClient } from '../contexts/ClientContext';
 import ConfirmDialog from '../components/ConfirmDialog';
 import './Management.css';
@@ -14,6 +14,26 @@ export default function Warehouses() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [warehouseToDelete, setWarehouseToDelete] = useState<number | null>(null);
   const [editingWarehouse, setEditingWarehouse] = useState<Warehouse | null>(null);
+  const [exclusions, setExclusions] = useState<WarehouseExclusion[]>([]);
+  const [possibleValues, setPossibleValues] = useState<ExclusionPossibleValues>({
+    aisle: [],
+    bay: [],
+    level: [],
+    bin: [],
+  });
+  const [showExclusionModal, setShowExclusionModal] = useState(false);
+  const [editingExclusion, setEditingExclusion] = useState<WarehouseExclusion | null>(null);
+  const [exclusionFormData, setExclusionFormData] = useState<CreateExclusionDto>({
+    warehouseId: 0,
+    aisleFrom: null,
+    aisleTo: null,
+    bayFrom: null,
+    bayTo: null,
+    levelFrom: null,
+    levelTo: null,
+    binFrom: null,
+    binTo: null,
+  });
   const [formData, setFormData] = useState<CreateWarehouseDto>({
     name: '',
     locationId: 0,
@@ -74,7 +94,19 @@ export default function Warehouses() {
     setShowModal(true);
   };
 
-  const handleEdit = (warehouse: Warehouse) => {
+  const loadExclusions = async (warehouseId: number) => {
+    try {
+      const res = await exclusionsApi.getByWarehouse(warehouseId);
+      setExclusions(res.data.data);
+      if (res.data.possibleValues) {
+        setPossibleValues(res.data.possibleValues);
+      }
+    } catch (error: any) {
+      console.error('Failed to load exclusions:', error);
+    }
+  };
+
+  const handleEdit = async (warehouse: Warehouse) => {
     setEditingWarehouse(warehouse);
     setFormData({ 
       name: warehouse.name, 
@@ -88,7 +120,118 @@ export default function Warehouses() {
       binType: warehouse.binType || null,
       binCount: warehouse.binCount || null,
     });
+    await loadExclusions(warehouse.id);
     setShowModal(true);
+  };
+
+  const handleCreateExclusion = () => {
+    if (!editingWarehouse) return;
+    setEditingExclusion(null);
+    setExclusionFormData({
+      warehouseId: editingWarehouse.id,
+      aisleFrom: null,
+      aisleTo: null,
+      bayFrom: null,
+      bayTo: null,
+      levelFrom: null,
+      levelTo: null,
+      binFrom: null,
+      binTo: null,
+    });
+    setShowExclusionModal(true);
+  };
+
+  const handleEditExclusion = (exclusion: WarehouseExclusion) => {
+    setEditingExclusion(exclusion);
+    setExclusionFormData({
+      warehouseId: exclusion.warehouseId,
+      aisleFrom: exclusion.aisleFrom || null,
+      aisleTo: exclusion.aisleTo || null,
+      bayFrom: exclusion.bayFrom || null,
+      bayTo: exclusion.bayTo || null,
+      levelFrom: exclusion.levelFrom || null,
+      levelTo: exclusion.levelTo || null,
+      binFrom: exclusion.binFrom || null,
+      binTo: exclusion.binTo || null,
+    });
+    setShowExclusionModal(true);
+  };
+
+  const handleDeleteExclusion = async (id: number) => {
+    if (!editingWarehouse) return;
+    try {
+      await exclusionsApi.delete(id, editingWarehouse.id);
+      toast.success('Exclusion deleted successfully!');
+      await loadExclusions(editingWarehouse.id);
+    } catch (error: any) {
+      console.error('Failed to delete exclusion:', error);
+      toast.error('Failed to delete exclusion');
+    }
+  };
+
+  const handleExclusionSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingWarehouse) return;
+
+    // At least one dimension must have a from value specified
+    if (!exclusionFormData.aisleFrom && !exclusionFormData.bayFrom && 
+        !exclusionFormData.levelFrom && !exclusionFormData.binFrom) {
+      toast.error('Please specify at least one dimension range for the exclusion.');
+      return;
+    }
+
+    // Validate ranges: "to" must be >= "from" if both are specified
+    const validateRange = (from: string | null | undefined, to: string | null | undefined, values: string[]) => {
+      if (!from) return true; // No from means all
+      if (!to) return true; // No to means single value or all after from
+      
+      const fromIndex = values.indexOf(from);
+      const toIndex = values.indexOf(to);
+      
+      if (fromIndex === -1 || toIndex === -1) return false;
+      return toIndex >= fromIndex;
+    };
+
+    if (!validateRange(exclusionFormData.aisleFrom, exclusionFormData.aisleTo, possibleValues.aisle) ||
+        !validateRange(exclusionFormData.bayFrom, exclusionFormData.bayTo, possibleValues.bay) ||
+        !validateRange(exclusionFormData.levelFrom, exclusionFormData.levelTo, possibleValues.level) ||
+        !validateRange(exclusionFormData.binFrom, exclusionFormData.binTo, possibleValues.bin)) {
+      toast.error('Invalid range: "To" value must be greater than or equal to "From" value.');
+      return;
+    }
+
+    try {
+      if (editingExclusion) {
+        await exclusionsApi.update(editingExclusion.id, {
+          ...exclusionFormData,
+          warehouseId: editingWarehouse.id,
+        });
+        toast.success('Exclusion updated successfully!');
+      } else {
+        await exclusionsApi.create({
+          ...exclusionFormData,
+          warehouseId: editingWarehouse.id,
+        });
+        toast.success('Exclusion created successfully!');
+      }
+      setShowExclusionModal(false);
+      await loadExclusions(editingWarehouse.id);
+      setExclusionFormData({
+        warehouseId: 0,
+        aisleFrom: null,
+        aisleTo: null,
+        bayFrom: null,
+        bayTo: null,
+        levelFrom: null,
+        levelTo: null,
+        binFrom: null,
+        binTo: null,
+      });
+      setEditingExclusion(null);
+    } catch (error: any) {
+      console.error('Failed to save exclusion:', error);
+      toast.error('Failed to save exclusion');
+    }
   };
 
   const handleDeleteClick = (id: number) => {
@@ -160,6 +303,7 @@ export default function Warehouses() {
         binCount: null,
       });
       setEditingWarehouse(null);
+      setExclusions([]);
     } catch (error: any) {
       console.error('Failed to save warehouse:', error);
       const errorMessage = error.response?.data?.error || error.message || 'connection issue';
@@ -247,11 +391,19 @@ export default function Warehouses() {
       </div>
 
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-overlay" onClick={() => {
+          setShowModal(false);
+          setExclusions([]);
+          setEditingWarehouse(null);
+        }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>{editingWarehouse ? 'Edit Warehouse' : 'Create Warehouse'}</h3>
-              <button className="modal-close" onClick={() => setShowModal(false)}>
+              <button className="modal-close" onClick={() => {
+                setShowModal(false);
+                setExclusions([]);
+                setEditingWarehouse(null);
+              }}>
                 ×
               </button>
             </div>
@@ -408,12 +560,280 @@ export default function Warehouses() {
                 </div>
               </div>
 
+              {/* Exclusions Section - Only show when editing existing warehouse */}
+              {editingWarehouse && (
+                <div style={{ marginTop: '1.5rem', marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h4 style={{ margin: 0, color: '#333', fontSize: '1.1rem' }}>Storage Exclusions</h4>
+                    <button 
+                      type="button" 
+                      onClick={handleCreateExclusion}
+                      className="btn-primary"
+                      style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+                    >
+                      + Add Exclusion
+                    </button>
+                  </div>
+                  
+                  {exclusions.length === 0 ? (
+                    <div style={{ padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '4px', textAlign: 'center', color: '#666' }}>
+                      No exclusions defined. All storage locations are available.
+                    </div>
+                  ) : (
+                    <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                        <thead>
+                          <tr style={{ backgroundColor: '#f5f5f5' }}>
+                            <th style={{ padding: '0.5rem', textAlign: 'left', border: '1px solid #ddd' }}>Aisle</th>
+                            <th style={{ padding: '0.5rem', textAlign: 'left', border: '1px solid #ddd' }}>Bay</th>
+                            <th style={{ padding: '0.5rem', textAlign: 'left', border: '1px solid #ddd' }}>Level</th>
+                            <th style={{ padding: '0.5rem', textAlign: 'left', border: '1px solid #ddd' }}>Bin</th>
+                            <th style={{ padding: '0.5rem', textAlign: 'center', border: '1px solid #ddd' }}>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {exclusions.map((exclusion) => {
+                            const formatRange = (from: string | null | undefined, to: string | null | undefined) => {
+                              if (!from) return 'All';
+                              if (!to || from === to) return from;
+                              return `${from} - ${to}`;
+                            };
+                            return (
+                              <tr key={exclusion.id}>
+                                <td style={{ padding: '0.5rem', border: '1px solid #ddd' }}>{formatRange(exclusion.aisleFrom, exclusion.aisleTo)}</td>
+                                <td style={{ padding: '0.5rem', border: '1px solid #ddd' }}>{formatRange(exclusion.bayFrom, exclusion.bayTo)}</td>
+                                <td style={{ padding: '0.5rem', border: '1px solid #ddd' }}>{formatRange(exclusion.levelFrom, exclusion.levelTo)}</td>
+                                <td style={{ padding: '0.5rem', border: '1px solid #ddd' }}>{formatRange(exclusion.binFrom, exclusion.binTo)}</td>
+                                <td style={{ padding: '0.5rem', border: '1px solid #ddd', textAlign: 'center' }}>
+                                <button 
+                                  type="button"
+                                  onClick={() => handleEditExclusion(exclusion)}
+                                  className="btn-edit"
+                                  style={{ marginRight: '0.5rem', padding: '0.25rem 0.5rem', fontSize: '0.85rem' }}
+                                >
+                                  Edit
+                                </button>
+                                <button 
+                                  type="button"
+                                  onClick={() => handleDeleteExclusion(exclusion.id)}
+                                  className="btn-delete"
+                                  style={{ padding: '0.25rem 0.5rem', fontSize: '0.85rem' }}
+                                >
+                                  Delete
+                                </button>
+                              </td>
+                            </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="modal-actions">
-                <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>
+                <button type="button" className="btn-secondary" onClick={() => {
+                  setShowModal(false);
+                  setExclusions([]);
+                  setEditingWarehouse(null);
+                }}>
                   Cancel
                 </button>
                 <button type="submit" className="btn-primary">
                   {editingWarehouse ? 'Update' : 'Create'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Exclusion Modal */}
+      {showExclusionModal && editingWarehouse && (
+        <div className="modal-overlay" onClick={() => setShowExclusionModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
+            <div className="modal-header">
+              <h3>{editingExclusion ? 'Edit Exclusion' : 'Create Exclusion'}</h3>
+              <button className="modal-close" onClick={() => setShowExclusionModal(false)}>
+                ×
+              </button>
+            </div>
+            <form onSubmit={handleExclusionSubmit}>
+              <div style={{ marginBottom: '1rem', padding: '0.75rem', backgroundColor: '#e3f2fd', borderRadius: '4px', fontSize: '0.9rem', color: '#1976d2' }}>
+                <strong>Note:</strong> Leave a field empty to exclude all values for that dimension. At least one dimension must have a "From" value specified. "To" can be left empty for a single value exclusion.
+              </div>
+              
+              {/* Aisle Range */}
+              <div style={{ marginBottom: '1.5rem', padding: '1rem', border: '1px solid #ddd', borderRadius: '4px' }}>
+                <h5 style={{ marginBottom: '0.75rem', color: '#555' }}>Aisle Range</h5>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group">
+                    <label htmlFor="exclusionAisleFrom">From</label>
+                    <select
+                      id="exclusionAisleFrom"
+                      value={exclusionFormData.aisleFrom || ''}
+                      onChange={(e) => setExclusionFormData({ ...exclusionFormData, aisleFrom: e.target.value || null })}
+                    >
+                      <option value="">All</option>
+                      {possibleValues.aisle.map((val) => (
+                        <option key={val} value={val}>{val}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="exclusionAisleTo">To</label>
+                    <select
+                      id="exclusionAisleTo"
+                      value={exclusionFormData.aisleTo || ''}
+                      onChange={(e) => setExclusionFormData({ ...exclusionFormData, aisleTo: e.target.value || null })}
+                      disabled={!exclusionFormData.aisleFrom}
+                    >
+                      <option value="">Single value</option>
+                      {possibleValues.aisle
+                        .filter((val) => {
+                          if (!exclusionFormData.aisleFrom) return false;
+                          const fromIndex = possibleValues.aisle.indexOf(exclusionFormData.aisleFrom);
+                          const valIndex = possibleValues.aisle.indexOf(val);
+                          return valIndex >= fromIndex;
+                        })
+                        .map((val) => (
+                          <option key={val} value={val}>{val}</option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bay Range */}
+              <div style={{ marginBottom: '1.5rem', padding: '1rem', border: '1px solid #ddd', borderRadius: '4px' }}>
+                <h5 style={{ marginBottom: '0.75rem', color: '#555' }}>Bay Range</h5>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group">
+                    <label htmlFor="exclusionBayFrom">From</label>
+                    <select
+                      id="exclusionBayFrom"
+                      value={exclusionFormData.bayFrom || ''}
+                      onChange={(e) => setExclusionFormData({ ...exclusionFormData, bayFrom: e.target.value || null })}
+                    >
+                      <option value="">All</option>
+                      {possibleValues.bay.map((val) => (
+                        <option key={val} value={val}>{val}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="exclusionBayTo">To</label>
+                    <select
+                      id="exclusionBayTo"
+                      value={exclusionFormData.bayTo || ''}
+                      onChange={(e) => setExclusionFormData({ ...exclusionFormData, bayTo: e.target.value || null })}
+                      disabled={!exclusionFormData.bayFrom}
+                    >
+                      <option value="">Single value</option>
+                      {possibleValues.bay
+                        .filter((val) => {
+                          if (!exclusionFormData.bayFrom) return false;
+                          const fromIndex = possibleValues.bay.indexOf(exclusionFormData.bayFrom);
+                          const valIndex = possibleValues.bay.indexOf(val);
+                          return valIndex >= fromIndex;
+                        })
+                        .map((val) => (
+                          <option key={val} value={val}>{val}</option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Level Range */}
+              <div style={{ marginBottom: '1.5rem', padding: '1rem', border: '1px solid #ddd', borderRadius: '4px' }}>
+                <h5 style={{ marginBottom: '0.75rem', color: '#555' }}>Level Range</h5>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group">
+                    <label htmlFor="exclusionLevelFrom">From</label>
+                    <select
+                      id="exclusionLevelFrom"
+                      value={exclusionFormData.levelFrom || ''}
+                      onChange={(e) => setExclusionFormData({ ...exclusionFormData, levelFrom: e.target.value || null })}
+                    >
+                      <option value="">All</option>
+                      {possibleValues.level.map((val) => (
+                        <option key={val} value={val}>{val}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="exclusionLevelTo">To</label>
+                    <select
+                      id="exclusionLevelTo"
+                      value={exclusionFormData.levelTo || ''}
+                      onChange={(e) => setExclusionFormData({ ...exclusionFormData, levelTo: e.target.value || null })}
+                      disabled={!exclusionFormData.levelFrom}
+                    >
+                      <option value="">Single value</option>
+                      {possibleValues.level
+                        .filter((val) => {
+                          if (!exclusionFormData.levelFrom) return false;
+                          const fromIndex = possibleValues.level.indexOf(exclusionFormData.levelFrom);
+                          const valIndex = possibleValues.level.indexOf(val);
+                          return valIndex >= fromIndex;
+                        })
+                        .map((val) => (
+                          <option key={val} value={val}>{val}</option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bin Range */}
+              <div style={{ marginBottom: '1.5rem', padding: '1rem', border: '1px solid #ddd', borderRadius: '4px' }}>
+                <h5 style={{ marginBottom: '0.75rem', color: '#555' }}>Bin Range</h5>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group">
+                    <label htmlFor="exclusionBinFrom">From</label>
+                    <select
+                      id="exclusionBinFrom"
+                      value={exclusionFormData.binFrom || ''}
+                      onChange={(e) => setExclusionFormData({ ...exclusionFormData, binFrom: e.target.value || null })}
+                    >
+                      <option value="">All</option>
+                      {possibleValues.bin.map((val) => (
+                        <option key={val} value={val}>{val}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="exclusionBinTo">To</label>
+                    <select
+                      id="exclusionBinTo"
+                      value={exclusionFormData.binTo || ''}
+                      onChange={(e) => setExclusionFormData({ ...exclusionFormData, binTo: e.target.value || null })}
+                      disabled={!exclusionFormData.binFrom}
+                    >
+                      <option value="">Single value</option>
+                      {possibleValues.bin
+                        .filter((val) => {
+                          if (!exclusionFormData.binFrom) return false;
+                          const fromIndex = possibleValues.bin.indexOf(exclusionFormData.binFrom);
+                          const valIndex = possibleValues.bin.indexOf(val);
+                          return valIndex >= fromIndex;
+                        })
+                        .map((val) => (
+                          <option key={val} value={val}>{val}</option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="btn-secondary" onClick={() => setShowExclusionModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary">
+                  {editingExclusion ? 'Update' : 'Create'}
                 </button>
               </div>
             </form>

@@ -13,7 +13,8 @@ export class WarehousesService {
     const queryBuilder = this.warehousesRepository
       .createQueryBuilder('warehouse')
       .leftJoinAndSelect('warehouse.location', 'location')
-      .leftJoinAndSelect('location.client', 'client');
+      .leftJoinAndSelect('location.client', 'client')
+      .leftJoinAndSelect('warehouse.exclusions', 'exclusions');
 
     if (clientId !== undefined && clientId !== null) {
       queryBuilder.where('location.clientId = :clientId', { clientId });
@@ -27,6 +28,7 @@ export class WarehousesService {
       .createQueryBuilder('warehouse')
       .leftJoinAndSelect('warehouse.location', 'location')
       .leftJoinAndSelect('location.client', 'client')
+      .leftJoinAndSelect('warehouse.exclusions', 'exclusions')
       .where('warehouse.id = :id', { id });
 
     if (clientId !== undefined && clientId !== null) {

@@ -99,6 +99,28 @@ export interface Location {
   updatedAt: string;
 }
 
+export interface WarehouseExclusion {
+  id: number;
+  warehouseId: number;
+  aisleFrom?: string | null;
+  aisleTo?: string | null;
+  bayFrom?: string | null;
+  bayTo?: string | null;
+  levelFrom?: string | null;
+  levelTo?: string | null;
+  binFrom?: string | null;
+  binTo?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ExclusionPossibleValues {
+  aisle: string[];
+  bay: string[];
+  level: string[];
+  bin: string[];
+}
+
 export interface Warehouse {
   id: number;
   name: string;
@@ -112,6 +134,7 @@ export interface Warehouse {
   levelCount?: number | null;
   binType?: 'numeric' | 'alphabetic' | null;
   binCount?: number | null;
+  exclusions?: WarehouseExclusion[];
   createdAt: string;
   updatedAt: string;
 }
@@ -239,6 +262,38 @@ export const warehousesApi = {
   create: (data: CreateWarehouseDto) => api.post<{ success: boolean; data: Warehouse }>('/api/warehouses', data),
   update: (id: number, data: UpdateWarehouseDto) => api.put<{ success: boolean; data: Warehouse }>(`/api/warehouses/${id}`, data),
   delete: (id: number) => api.delete<{ success: boolean; message: string }>(`/api/warehouses/${id}`),
+};
+
+// Exclusions API
+export interface CreateExclusionDto {
+  warehouseId: number;
+  aisleFrom?: string | null;
+  aisleTo?: string | null;
+  bayFrom?: string | null;
+  bayTo?: string | null;
+  levelFrom?: string | null;
+  levelTo?: string | null;
+  binFrom?: string | null;
+  binTo?: string | null;
+}
+
+export interface UpdateExclusionDto {
+  aisleFrom?: string | null;
+  aisleTo?: string | null;
+  bayFrom?: string | null;
+  bayTo?: string | null;
+  levelFrom?: string | null;
+  levelTo?: string | null;
+  binFrom?: string | null;
+  binTo?: string | null;
+}
+
+export const exclusionsApi = {
+  getByWarehouse: (warehouseId: number) => api.get<{ success: boolean; data: WarehouseExclusion[]; possibleValues: ExclusionPossibleValues }>(`/api/exclusions/warehouse/${warehouseId}`),
+  getById: (id: number, warehouseId: number) => api.get<{ success: boolean; data: WarehouseExclusion }>(`/api/exclusions/${id}?warehouseId=${warehouseId}`),
+  create: (data: CreateExclusionDto) => api.post<{ success: boolean; data: WarehouseExclusion }>('/api/exclusions', data),
+  update: (id: number, data: UpdateExclusionDto & { warehouseId: number }) => api.put<{ success: boolean; data: WarehouseExclusion }>(`/api/exclusions/${id}`, data),
+  delete: (id: number, warehouseId: number) => api.delete<{ success: boolean; message: string }>(`/api/exclusions/${id}?warehouseId=${warehouseId}`),
 };
 
 // Health API
