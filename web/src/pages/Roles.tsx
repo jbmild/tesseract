@@ -317,7 +317,7 @@ export default function Roles() {
               <th>Description</th>
               <th>Permissions</th>
               <th>Created</th>
-              <th>Actions</th>
+              <th style={{ textAlign: 'right' }}></th>
             </tr>
           </thead>
           <tbody>
@@ -333,7 +333,7 @@ export default function Roles() {
                   <td>{role.description || '-'}</td>
                   <td>{role.permissions?.length || 0} permission(s)</td>
                   <td>{new Date(role.createdAt).toLocaleDateString()}</td>
-                  <td>
+                  <td style={{ textAlign: 'right' }}>
                     <button onClick={() => handleEdit(role)} className="btn-edit">Edit</button>
                     <button onClick={() => handleManagePermissions(role)} className="btn-permissions">Permissions</button>
                     <button onClick={() => handleDeleteClick(role.id)} className="btn-delete">Delete</button>

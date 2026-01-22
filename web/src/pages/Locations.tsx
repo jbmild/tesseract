@@ -142,17 +142,16 @@ export default function Locations() {
         <table className="data-table">
           <thead>
             <tr>
-              <th>ID</th>
               <th>Name</th>
-              <th>Client</th>
               <th>Created</th>
-              <th>Actions</th>
+              <th>Last Updated</th>
+              <th style={{ textAlign: 'right' }}></th>
             </tr>
           </thead>
           <tbody>
             {!selectedClient || locations.length === 0 ? (
               <tr>
-                <td colSpan={5} className="empty">
+                <td colSpan={4} className="empty">
                   {!selectedClient 
                     ? 'Please select a client to view locations' 
                     : `No locations found for ${selectedClient.name}`}
@@ -161,11 +160,22 @@ export default function Locations() {
             ) : (
               locations.map((location) => (
                 <tr key={location.id}>
-                  <td>{location.id}</td>
                   <td>{location.name}</td>
-                  <td>{location.client?.name || 'N/A'}</td>
-                  <td>{new Date(location.createdAt).toLocaleDateString()}</td>
-                  <td>
+                  <td>{new Date(location.createdAt).toLocaleString(undefined, { 
+                    year: 'numeric', 
+                    month: '2-digit', 
+                    day: '2-digit', 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}</td>
+                  <td>{new Date(location.updatedAt).toLocaleString(undefined, { 
+                    year: 'numeric', 
+                    month: '2-digit', 
+                    day: '2-digit', 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}</td>
+                  <td style={{ textAlign: 'right' }}>
                     <button onClick={() => handleEdit(location)} className="btn-edit">Edit</button>
                     <button onClick={() => handleDeleteClick(location.id)} className="btn-delete">Delete</button>
                   </td>

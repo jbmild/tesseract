@@ -172,7 +172,7 @@ export default function Users() {
               <th>Clients</th>
               <th>Role</th>
               <th>Created</th>
-              <th>Actions</th>
+              <th style={{ textAlign: 'right' }}></th>
             </tr>
           </thead>
           <tbody>
@@ -188,7 +188,7 @@ export default function Users() {
                   <td>{user.clients && user.clients.length > 0 ? user.clients.map(c => c.name).join(', ') : '-'}</td>
                   <td>{user.role?.name || '-'}</td>
                   <td>{new Date(user.createdAt).toLocaleDateString()}</td>
-                  <td>
+                  <td style={{ textAlign: 'right' }}>
                     <button onClick={() => handleEdit(user)} className="btn-edit">Edit</button>
                     <button onClick={() => handleDeleteClick(user.id)} className="btn-delete">Delete</button>
                   </td>

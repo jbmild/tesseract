@@ -304,12 +304,12 @@ export interface UpdateExclusionDto {
   binTo?: string | null;
 }
 
-export const exclusionsApi = {
-  getByWarehouse: (warehouseId: number) => api.get<{ success: boolean; data: WarehouseExclusion[]; possibleValues: ExclusionPossibleValues }>(`/api/exclusions/warehouse/${warehouseId}`),
-  getById: (id: number, warehouseId: number) => api.get<{ success: boolean; data: WarehouseExclusion }>(`/api/exclusions/${id}?warehouseId=${warehouseId}`),
-  create: (data: CreateExclusionDto) => api.post<{ success: boolean; data: WarehouseExclusion }>('/api/exclusions', data),
-  update: (id: number, data: UpdateExclusionDto & { warehouseId: number }) => api.put<{ success: boolean; data: WarehouseExclusion }>(`/api/exclusions/${id}`, data),
-  delete: (id: number, warehouseId: number) => api.delete<{ success: boolean; message: string }>(`/api/exclusions/${id}?warehouseId=${warehouseId}`),
+export const warehouseExclusionsApi = {
+  getByWarehouse: (warehouseId: number) => api.get<{ success: boolean; data: WarehouseExclusion[]; possibleValues: ExclusionPossibleValues }>(`/api/warehouse-exclusions/warehouse/${warehouseId}`),
+  getById: (id: number, warehouseId: number) => api.get<{ success: boolean; data: WarehouseExclusion }>(`/api/warehouse-exclusions/${id}?warehouseId=${warehouseId}`),
+  create: (data: CreateExclusionDto) => api.post<{ success: boolean; data: WarehouseExclusion }>('/api/warehouse-exclusions', data),
+  update: (id: number, data: UpdateExclusionDto & { warehouseId: number }) => api.put<{ success: boolean; data: WarehouseExclusion }>(`/api/warehouse-exclusions/${id}`, data),
+  delete: (id: number, warehouseId: number) => api.delete<{ success: boolean; message: string }>(`/api/warehouse-exclusions/${id}?warehouseId=${warehouseId}`),
 };
 
 // Products API

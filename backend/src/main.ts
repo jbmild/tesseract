@@ -51,7 +51,7 @@ app.use('/api/permissions', authenticateToken, clientContextMiddleware, permissi
 app.use('/api/clients', authenticateToken, clientContextMiddleware, clientsRoutes);
 app.use('/api/locations', authenticateToken, clientContextMiddleware, locationsRoutes);
 app.use('/api/warehouses', authenticateToken, clientContextMiddleware, warehousesRoutes);
-app.use('/api/exclusions', authenticateToken, clientContextMiddleware, exclusionsRoutes);
+app.use('/api/warehouse-exclusions', authenticateToken, clientContextMiddleware, exclusionsRoutes);
 app.use('/api/products', authenticateToken, clientContextMiddleware, productsRoutes);
 
 // Error handling middleware

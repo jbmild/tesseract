@@ -128,6 +128,27 @@ export function getRoutesFromApp(app: Express): RouteInfo[] {
     { method: 'POST', path: '/api/locations', resource: 'locations', action: 'locations_create' },
     { method: 'PUT', path: '/api/locations/:id', resource: 'locations', action: 'locations_update' },
     { method: 'DELETE', path: '/api/locations/:id', resource: 'locations', action: 'locations_delete' },
+    
+    // Warehouses
+    { method: 'GET', path: '/api/warehouses', resource: 'warehouses', action: 'warehouses_list' },
+    { method: 'GET', path: '/api/warehouses/:id', resource: 'warehouses', action: 'warehouses_read' },
+    { method: 'POST', path: '/api/warehouses', resource: 'warehouses', action: 'warehouses_create' },
+    { method: 'PUT', path: '/api/warehouses/:id', resource: 'warehouses', action: 'warehouses_update' },
+    { method: 'DELETE', path: '/api/warehouses/:id', resource: 'warehouses', action: 'warehouses_delete' },
+    
+    // Warehouse Exclusions
+    { method: 'GET', path: '/api/warehouse-exclusions/warehouse/:warehouseId', resource: 'warehouse_exclusions', action: 'warehouse_exclusions_list' },
+    { method: 'GET', path: '/api/warehouse-exclusions/:id', resource: 'warehouse_exclusions', action: 'warehouse_exclusions_read' },
+    { method: 'POST', path: '/api/warehouse-exclusions', resource: 'warehouse_exclusions', action: 'warehouse_exclusions_create' },
+    { method: 'PUT', path: '/api/warehouse-exclusions/:id', resource: 'warehouse_exclusions', action: 'warehouse_exclusions_update' },
+    { method: 'DELETE', path: '/api/warehouse-exclusions/:id', resource: 'warehouse_exclusions', action: 'warehouse_exclusions_delete' },
+    
+    // Products
+    { method: 'GET', path: '/api/products', resource: 'products', action: 'products_list' },
+    { method: 'GET', path: '/api/products/:id', resource: 'products', action: 'products_read' },
+    { method: 'POST', path: '/api/products', resource: 'products', action: 'products_create' },
+    { method: 'PUT', path: '/api/products/:id', resource: 'products', action: 'products_update' },
+    { method: 'DELETE', path: '/api/products/:id', resource: 'products', action: 'products_delete' },
   ];
 
   return routeDefinitions.map(route => ({

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { warehousesApi, locationsApi, exclusionsApi, Warehouse, Location, WarehouseExclusion, CreateWarehouseDto, CreateExclusionDto, ExclusionPossibleValues } from '../services/api';
+import { warehousesApi, locationsApi, warehouseExclusionsApi, Warehouse, Location, WarehouseExclusion, CreateWarehouseDto, CreateExclusionDto, ExclusionPossibleValues } from '../services/api';
 import { useClient } from '../contexts/ClientContext';
 import ConfirmDialog from '../components/ConfirmDialog';
 import './Management.css';
@@ -119,7 +119,7 @@ export default function Warehouses() {
 
   const loadExclusions = async (warehouseId: number) => {
     try {
-      const res = await exclusionsApi.getByWarehouse(warehouseId);
+      const res = await warehouseExclusionsApi.getByWarehouse(warehouseId);
       setExclusions(res.data.data);
       if (res.data.possibleValues) {
         setPossibleValues(res.data.possibleValues);
@@ -183,7 +183,7 @@ export default function Warehouses() {
   const handleDeleteExclusion = async (id: number) => {
     if (!editingWarehouse) return;
     try {
-      await exclusionsApi.delete(id, editingWarehouse.id);
+      await warehouseExclusionsApi.delete(id, editingWarehouse.id);
       toast.success('Exclusion deleted successfully!');
       await loadExclusions(editingWarehouse.id);
     } catch (error: any) {
@@ -225,13 +225,13 @@ export default function Warehouses() {
 
     try {
       if (editingExclusion) {
-        await exclusionsApi.update(editingExclusion.id, {
+        await warehouseExclusionsApi.update(editingExclusion.id, {
           ...exclusionFormData,
           warehouseId: editingWarehouse.id,
         });
         toast.success('Exclusion updated successfully!');
       } else {
-        await exclusionsApi.create({
+        await warehouseExclusionsApi.create({
           ...exclusionFormData,
           warehouseId: editingWarehouse.id,
         });
@@ -377,18 +377,17 @@ export default function Warehouses() {
         <table className="data-table">
           <thead>
             <tr>
-              <th>ID</th>
               <th>Name</th>
               <th>Location</th>
-              <th>Client</th>
               <th>Created</th>
-              <th>Actions</th>
+              <th>Last Updated</th>
+              <th style={{ textAlign: 'right' }}></th>
             </tr>
           </thead>
           <tbody>
             {!selectedClient || warehouses.length === 0 ? (
               <tr>
-                <td colSpan={6} className="empty">
+                <td colSpan={5} className="empty">
                   {!selectedClient 
                     ? 'Please select a client to view warehouses' 
                     : `No warehouses found for ${selectedClient.name}`}
@@ -397,12 +396,23 @@ export default function Warehouses() {
             ) : (
               warehouses.map((warehouse) => (
                 <tr key={warehouse.id}>
-                  <td>{warehouse.id}</td>
                   <td>{warehouse.name}</td>
                   <td>{warehouse.location?.name || 'N/A'}</td>
-                  <td>{warehouse.location?.client?.name || 'N/A'}</td>
-                  <td>{new Date(warehouse.createdAt).toLocaleDateString()}</td>
-                  <td>
+                  <td>{new Date(warehouse.createdAt).toLocaleString(undefined, { 
+                    year: 'numeric', 
+                    month: '2-digit', 
+                    day: '2-digit', 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}</td>
+                  <td>{new Date(warehouse.updatedAt).toLocaleString(undefined, { 
+                    year: 'numeric', 
+                    month: '2-digit', 
+                    day: '2-digit', 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}</td>
+                  <td style={{ textAlign: 'right' }}>
                     <button onClick={() => handleEdit(warehouse)} className="btn-edit">Edit</button>
                     <button onClick={() => handleDeleteClick(warehouse.id)} className="btn-delete">Delete</button>
                   </td>
@@ -422,13 +432,6 @@ export default function Warehouses() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>{editingWarehouse ? 'Edit Warehouse' : 'Create Warehouse'}</h3>
-              <button className="modal-close" onClick={() => {
-                setShowModal(false);
-                setExclusions([]);
-                setEditingWarehouse(null);
-              }}>
-                ×
-              </button>
             </div>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
@@ -678,9 +681,6 @@ export default function Warehouses() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
             <div className="modal-header">
               <h3>{editingExclusion ? 'Edit Exclusion' : 'Create Exclusion'}</h3>
-              <button className="modal-close" onClick={() => setShowExclusionModal(false)}>
-                ×
-              </button>
             </div>
             <form onSubmit={handleExclusionSubmit}>
               <div style={{ marginBottom: '1rem', padding: '0.75rem', backgroundColor: '#e3f2fd', borderRadius: '4px', fontSize: '0.9rem', color: '#1976d2' }}>

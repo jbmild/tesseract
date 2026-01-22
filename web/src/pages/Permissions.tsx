@@ -106,7 +106,7 @@ export default function Permissions() {
               <th>Description</th>
               <th>Roles</th>
               <th>Created</th>
-              <th>Actions</th>
+              <th style={{ textAlign: 'right' }}></th>
             </tr>
           </thead>
           <tbody>
@@ -123,7 +123,7 @@ export default function Permissions() {
                   <td>{permission.description || '-'}</td>
                   <td>{permission.roles?.length || 0} role(s)</td>
                   <td>{new Date(permission.createdAt).toLocaleDateString()}</td>
-                  <td>
+                  <td style={{ textAlign: 'right' }}>
                     <span style={{ color: '#999', fontStyle: 'italic' }}>Auto-generated</span>
                   </td>
                 </tr>

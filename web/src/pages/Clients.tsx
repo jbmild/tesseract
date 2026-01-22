@@ -152,26 +152,20 @@ export default function Clients() {
         <table className="data-table">
           <thead>
             <tr>
-              <th>ID</th>
               <th>Name</th>
-              <th>Users</th>
-              <th>Created</th>
-              <th>Actions</th>
+              <th style={{ textAlign: 'right' }}></th>
             </tr>
           </thead>
           <tbody>
             {clients.length === 0 ? (
               <tr>
-                <td colSpan={5} className="empty">No clients found</td>
+                <td colSpan={2} className="empty">No clients found</td>
               </tr>
             ) : (
               clients.map((client) => (
                 <tr key={client.id}>
-                  <td>{client.id}</td>
                   <td>{client.name}</td>
-                  <td>{client.users?.length || 0} user(s)</td>
-                  <td>{new Date(client.createdAt).toLocaleDateString()}</td>
-                  <td>
+                  <td style={{ textAlign: 'right' }}>
                     <button onClick={() => handleEdit(client)} className="btn-edit">Edit</button>
                     <button onClick={() => handleDeleteClick(client.id)} className="btn-delete">Delete</button>
                   </td>

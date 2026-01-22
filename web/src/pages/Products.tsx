@@ -215,7 +215,7 @@ export default function Products() {
               <th>Name</th>
               <th>Created</th>
               <th>Last Updated</th>
-              <th>Actions</th>
+              <th style={{ textAlign: 'right' }}></th>
             </tr>
           </thead>
           <tbody>
@@ -252,7 +252,7 @@ export default function Products() {
                       hour: '2-digit', 
                       minute: '2-digit' 
                     })}</td>
-                    <td>
+                    <td style={{ textAlign: 'right' }}>
                       <button onClick={() => handleEdit(product)} className="btn-edit">Edit</button>
                       <button onClick={() => handleDeleteClick(product.id)} className="btn-delete">Delete</button>
                     </td>
