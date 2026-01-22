@@ -104,6 +104,14 @@ export interface Warehouse {
   name: string;
   locationId: number;
   location?: Location;
+  aisleType?: 'numeric' | 'alphabetic' | null;
+  aisleCount?: number | null;
+  bayType?: 'numeric' | 'alphabetic' | null;
+  bayCount?: number | null;
+  levelType?: 'numeric' | 'alphabetic' | null;
+  levelCount?: number | null;
+  binType?: 'numeric' | 'alphabetic' | null;
+  binCount?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -199,11 +207,37 @@ export const locationsApi = {
 };
 
 // Warehouses API
+export interface CreateWarehouseDto {
+  name: string;
+  locationId: number;
+  aisleType?: 'numeric' | 'alphabetic' | null;
+  aisleCount?: number | null;
+  bayType?: 'numeric' | 'alphabetic' | null;
+  bayCount?: number | null;
+  levelType?: 'numeric' | 'alphabetic' | null;
+  levelCount?: number | null;
+  binType?: 'numeric' | 'alphabetic' | null;
+  binCount?: number | null;
+}
+
+export interface UpdateWarehouseDto {
+  name?: string;
+  locationId?: number;
+  aisleType?: 'numeric' | 'alphabetic' | null;
+  aisleCount?: number | null;
+  bayType?: 'numeric' | 'alphabetic' | null;
+  bayCount?: number | null;
+  levelType?: 'numeric' | 'alphabetic' | null;
+  levelCount?: number | null;
+  binType?: 'numeric' | 'alphabetic' | null;
+  binCount?: number | null;
+}
+
 export const warehousesApi = {
   getAll: () => api.get<{ success: boolean; data: Warehouse[] }>('/api/warehouses'),
   getById: (id: number) => api.get<{ success: boolean; data: Warehouse }>(`/api/warehouses/${id}`),
-  create: (data: { name: string; locationId: number }) => api.post<{ success: boolean; data: Warehouse }>('/api/warehouses', data),
-  update: (id: number, data: { name?: string; locationId?: number }) => api.put<{ success: boolean; data: Warehouse }>(`/api/warehouses/${id}`, data),
+  create: (data: CreateWarehouseDto) => api.post<{ success: boolean; data: Warehouse }>('/api/warehouses', data),
+  update: (id: number, data: UpdateWarehouseDto) => api.put<{ success: boolean; data: Warehouse }>(`/api/warehouses/${id}`, data),
   delete: (id: number) => api.delete<{ success: boolean; message: string }>(`/api/warehouses/${id}`),
 };
 
